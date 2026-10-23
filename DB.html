@@ -26,6 +26,108 @@
 </head>
 
 <body>
+  <!-- ==================== UNIVERSAL PUBLICATION NAV ==================== -->
+  <nav class="lsd-top-nav">
+    <div class="lsd-nav-container">
+      <div class="lsd-nav-left">
+        <a href="./index.html" class="lsd-hub-link" title="Back to All Guides">
+          <span class="lsd-hub-badge">⌘</span>
+          <span>All Guides</span>
+        </a>
+        <span class="lsd-divider"></span>
+        <button class="lsd-chapter-trigger" id="lsdChapterToggle" onclick="document.getElementById('lsdMenuOverlay').classList.toggle('active')" aria-label="Open chapters menu">
+          <span class="lsd-chapter-num">Chapter 2/6</span>
+          <span>🗄️</span>
+          <span class="lsd-chapter-name">SQL, NoSQL & Vector DBs</span>
+          <span style="font-size:0.7rem;opacity:0.6;">▾</span>
+        </button>
+      </div>
+
+      <div class="lsd-nav-right">
+        <a href="./Caching.html" class="lsd-nav-btn" title="Previous: Caching at Staff Level (Alt + [)">← Prev</a>
+        <a href="./Docker&Kubernetes.html" class="lsd-nav-btn" title="Next: Docker & Kubernetes (Alt + ])">Next →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Chapter Jump Modal / Dropdown -->
+  <div class="lsd-menu-overlay" id="lsdMenuOverlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="lsd-menu-panel">
+      <div class="lsd-menu-header">
+        <span class="lsd-menu-title">📚 System Design Field Guide — Chapters</span>
+        <button class="lsd-menu-close" onclick="document.getElementById('lsdMenuOverlay').classList.remove('active')" aria-label="Close menu">&times;</button>
+      </div>
+      <div class="lsd-menu-list">
+      <a href="./Caching.html" class="lsd-menu-item">
+        <div class="lsd-item-icon">⚡</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>Caching at Staff Level</span>
+            
+          </div>
+          <div class="lsd-item-desc">Multi-tier caching, consistency, eviction, and stampede mitigation</div>
+        </div>
+        <span class="lsd-item-num">01</span>
+      </a>
+      <a href="./DB.html" class="lsd-menu-item current">
+        <div class="lsd-item-icon">🗄️</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>SQL, NoSQL & Vector DBs</span>
+            <span class="lsd-item-badge">Reading</span>
+          </div>
+          <div class="lsd-item-desc">RDBMS, document, wide-column, graph, and vector search engines</div>
+        </div>
+        <span class="lsd-item-num">02</span>
+      </a>
+      <a href="./Docker&Kubernetes.html" class="lsd-menu-item">
+        <div class="lsd-item-icon">🐳</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>Docker & Kubernetes</span>
+            
+          </div>
+          <div class="lsd-item-desc">Containers, layer caching, pods, self-healing, and orchestration</div>
+        </div>
+        <span class="lsd-item-num">03</span>
+      </a>
+      <a href="./Request_Journey.html" class="lsd-menu-item">
+        <div class="lsd-item-icon">🌐</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>The Request's Journey</span>
+            
+          </div>
+          <div class="lsd-item-desc">DNS, CDN, Anycast, Proxies, Load Balancers, and API Gateways</div>
+        </div>
+        <span class="lsd-item-num">04</span>
+      </a>
+      <a href="./auth.html" class="lsd-menu-item">
+        <div class="lsd-item-icon">🔐</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>AuthN & AuthZ at Staff Level</span>
+            
+          </div>
+          <div class="lsd-item-desc">OAuth 2.0, OIDC, JWT lifecycle, RBAC, ABAC, and Google Zanzibar</div>
+        </div>
+        <span class="lsd-item-num">05</span>
+      </a>
+      <a href="./ratelimiting.html" class="lsd-menu-item">
+        <div class="lsd-item-icon">⏱️</div>
+        <div class="lsd-item-info">
+          <div class="lsd-item-title">
+            <span>Rate Limiting, Three Ways</span>
+            
+          </div>
+          <div class="lsd-item-desc">Fixed Window, Token Bucket, Leaky Bucket, and boundary bursts</div>
+        </div>
+        <span class="lsd-item-num">06</span>
+      </a>
+      </div>
+    </div>
+  </div>
+
     <title>SQL, NoSQL &amp; Vector Databases — A Field Guide</title>
     <meta name="color-scheme" content="light dark">
     <style>
@@ -1897,7 +1999,27 @@ COMMIT;</pre>
 
     </main>
 
-    <footer>
+    
+  <!-- ==================== ARTICLE BOTTOM PAGINATION ==================== -->
+  <div class="lsd-bottom-nav">
+    <div class="lsd-pagination-grid">
+      <a href="./Caching.html" class="lsd-pagination-card prev">
+        <span class="lsd-pagination-label">← Previous Chapter</span>
+        <span class="lsd-pagination-title">⚡ Caching at Staff Level</span>
+      </a>
+      <a href="./Docker&Kubernetes.html" class="lsd-pagination-card next">
+        <span class="lsd-pagination-label">Next Chapter →</span>
+        <span class="lsd-pagination-title">🐳 Docker & Kubernetes</span>
+      </a>
+    </div>
+    <div class="lsd-bottom-hub-bar">
+      <a href="./index.html" class="lsd-bottom-hub-btn">
+        <span>⌘</span>
+        <span>View All System Design Topics & Simulators</span>
+      </a>
+    </div>
+  </div>
+<footer>
         <div class="wrap">
             <span>Field guide — SQL, NoSQL &amp; Vector Databases. Written for interview prep and architecture decisions
                 alike.</span>

@@ -307,6 +307,12 @@
   border-radius: 4px;
 }
 
+.lsd-item-num {
+  font-family: var(--lsd-nav-mono);
+  font-size: 0.75rem;
+  color: var(--lsd-nav-muted);
+}
+
 /* 4. Bottom Article Pagination Section (Previous & Next Post) */
 .lsd-bottom-nav {
   max-width: 980px;
