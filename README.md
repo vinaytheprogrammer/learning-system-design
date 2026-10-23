@@ -17,7 +17,14 @@ Interactive visual guides, architectural deep dives, and mental models for maste
 
 ---
 
-## 🚀 How to View
+## 🌐 Live Website (GitHub Pages)
+
+The interactive publication is live at:  
+👉 **[https://vinaytheprogrammer.github.io/learning-system-design/](https://vinaytheprogrammer.github.io/learning-system-design/)**
+
+---
+
+## 🚀 How to View Locally
 
 Each module is a self-contained, interactive HTML document with built-in diagrams, simulators, and dark/light mode support.
 
@@ -25,7 +32,17 @@ You can view any module simply by opening it in your web browser:
 
 ```bash
 # Example
-google-chrome ./ratelimiting.html
+google-chrome ./index.html
 # or
-open ./ratelimiting.html
+open ./index.html
 ```
+
+---
+
+## 🤖 AI Agent & Deployment Guidelines
+
+If an AI coding assistant is adding or updating modules in this repository, it **must** adhere to the instructions documented in [`AGENTS.md`](./AGENTS.md):
+- Keep GitHub Pages deployed strictly as an isolated Project Site (`/learning-system-design/`), never touching the user's primary portfolio (`vinaytheprogrammer.github.io`).
+- Maintain continuous circular reading flow across all `.html` pages (`prev` and `next` connections at both top header and bottom pagination).
+- Update [`index.html`](./index.html), [`nav.js`](./nav.js), and this [`README.md`](./README.md) whenever a new guide is added.
+
