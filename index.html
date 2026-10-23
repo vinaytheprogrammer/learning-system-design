@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Design Field Guide — Interactive Learning Modules</title>
+  <meta name="description" content="Visual architectures, interactive simulators, and mental models for mastering System Design at staff level.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --bg: #0B0F17;
+      --surface: #121824;
+      --surface-hover: #182234;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-border-hover: rgba(56, 189, 248, 0.35);
+
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-soft: #64748B;
+
+      --primary: #38BDF8;
+      --primary-glow: rgba(56, 189, 248, 0.15);
+      --accent: #818CF8;
+      --accent-glow: rgba(129, 140, 248, 0.15);
+
+      --badge-bg: rgba(255, 255, 255, 0.05);
+      --badge-text: #CBD5E1;
+
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --radius-card: 16px;
+      --radius-badge: 999px;
+    }
+
+    [data-theme="light"] {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-hover: #F1F5F9;
+      --surface-border: rgba(15, 23, 42, 0.08);
+      --surface-border-hover: rgba(14, 165, 233, 0.4);
+
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --text-soft: #94A3B8;
+
+      --primary: #0284C7;
+      --primary-glow: rgba(2, 132, 199, 0.1);
+      --accent: #6366F1;
+      --accent-glow: rgba(99, 102, 241, 0.1);
+
+      --badge-bg: rgba(15, 23, 42, 0.05);
+      --badge-text: #334155;
+
+      --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Ambient top glow */
+    .ambient-glow {
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(circle, var(--primary-glow) 0%, var(--accent-glow) 50%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 3rem 1.5rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-action {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-main);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-badge);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--surface-hover);
+      border-color: var(--surface-border-hover);
+      transform: translateY(-1px);
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto 2rem;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--radius-badge);
+      background: var(--primary-glow);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.25rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .search-box {
+      max-width: 520px;
+      margin: 2rem auto 0;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.85rem 1.25rem 0.85rem 2.85rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-soft);
+      pointer-events: none;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-card);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, transparent);
+      transition: background 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--surface-border-hover);
+      background: var(--surface-hover);
+    }
+
+    .card:hover::before {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      background: var(--badge-bg);
+      border: 1px solid var(--surface-border);
+    }
+
+    .card-index {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-soft);
+      padding: 0.25rem 0.6rem;
+      background: var(--badge-bg);
+      border-radius: 6px;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.2rem 0.6rem;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border-radius: var(--radius-badge);
+      border: 1px solid var(--surface-border);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1rem;
+      border-top: 1px solid var(--surface-border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .arrow-icon {
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover .arrow-icon {
+      transform: translateX(4px);
+    }
+
+    footer {
+      border-top: 1px solid var(--surface-border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      header {
+        padding-top: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <header>
+    <div class="top-nav">
+      <a href="./" class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <span>System Design Guide</span>
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn-action" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">☀️</span>
+          <span id="themeText">Theme</span>
+        </button>
+        <a href="https://github.com/vinaytheprogrammer/learning-system-design" target="_blank" rel="noopener noreferrer" class="btn-action">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-tag">Interactive Field Guide</div>
+      <h1 class="hero-title">Master <span>System Design</span> Visually</h1>
+      <p class="hero-desc">Interactive visual architectures, algorithm simulators, and engineering trade-offs distilled from real-world high-scale production systems.</p>
+
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search modules, concepts, or algorithms..." autocomplete="off">
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="modulesGrid">
+      
+      <!-- Module 1: Caching -->
+      <a href="./Caching.html" class="card" data-keywords="caching cache-aside write-through redis memcached stampede avalanche consistent hashing invalidation">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#38BDF8">⚡</div>
+          <span class="card-index">01</span>
+        </div>
+        <h2 class="card-title">Caching at Staff Level</h2>
+        <p class="card-desc">Architecting multi-tier caches, mastering consistency tradeoffs, solving thundering herds, stampedes, and edge invalidations at scale.</p>
+        <div class="tags">
+          <span class="tag">Redis</span>
+          <span class="tag">Consistent Hashing</span>
+          <span class="tag">Cache Stampede</span>
+          <span class="tag">Eviction</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+      <!-- Module 2: Databases -->
+      <a href="./DB.html" class="card" data-keywords="database sql nosql vector postgres mongodb cassandra neo4j embeddings rag acid">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#A78BFA">🗄️</div>
+          <span class="card-index">02</span>
+        </div>
+        <h2 class="card-title">SQL, NoSQL & Vector DBs</h2>
+        <p class="card-desc">Comprehensive field guide to relational stores, key-value, document, wide-column, graph DBs, and modern vector databases for AI.</p>
+        <div class="tags">
+          <span class="tag">RDBMS</span>
+          <span class="tag">NoSQL</span>
+          <span class="tag">Vector Search</span>
+          <span class="tag">Data Modeling</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+      <!-- Module 3: Docker & Kubernetes -->
+      <a href="./Docker&Kubernetes.html" class="card" data-keywords="docker kubernetes k8s containers pods deployments orchestration self-healing layers cgroups">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#0284C7">🐳</div>
+          <span class="card-index">03</span>
+        </div>
+        <h2 class="card-title">Docker & Kubernetes</h2>
+        <p class="card-desc">The shipping yard theory of software: container mechanics, image layer caching, cluster orchestration, self-healing pods, and autoscaling.</p>
+        <div class="tags">
+          <span class="tag">Containers</span>
+          <span class="tag">Orchestration</span>
+          <span class="tag">Self-Healing</span>
+          <span class="tag">K8s Pods</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+      <!-- Module 4: The Request Journey -->
+      <a href="./Request_Journey.html" class="card" data-keywords="network request dns cdn load balancer reverse proxy api gateway nginx anycast firewall">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#F59E0B">🌐</div>
+          <span class="card-index">04</span>
+        </div>
+        <h2 class="card-title">The Request's Journey</h2>
+        <p class="card-desc">Tracing an HTTP packet from browser keystroke to backend server: DNS, Anycast routing, CDN edge caches, Reverse Proxies, and API Gateways.</p>
+        <div class="tags">
+          <span class="tag">DNS</span>
+          <span class="tag">CDN & Anycast</span>
+          <span class="tag">Load Balancers</span>
+          <span class="tag">API Gateway</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+      <!-- Module 5: AuthN & AuthZ -->
+      <a href="./auth.html" class="card" data-keywords="auth authentication authorization oauth2 oidc jwt rbac abac rebac zanzibar security pkce">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#10B981">🔐</div>
+          <span class="card-index">05</span>
+        </div>
+        <h2 class="card-title">AuthN & AuthZ at Staff Level</h2>
+        <p class="card-desc">Modern identity infrastructure: OAuth 2.0 grant types, OIDC, JWT lifecycle & revocation, RBAC/ABAC models, and Zanzibar relationship-based access.</p>
+        <div class="tags">
+          <span class="tag">OAuth 2.0 / PKCE</span>
+          <span class="tag">JWT Tokens</span>
+          <span class="tag">ReBAC (Zanzibar)</span>
+          <span class="tag">Security</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+      <!-- Module 6: Rate Limiting -->
+      <a href="./ratelimiting.html" class="card" data-keywords="rate limiting token bucket leaky bucket fixed window sliding window throttling redis distributed">
+        <div class="card-header">
+          <div class="card-icon-wrap" style="color:#EF4444">⏱️</div>
+          <span class="card-index">06</span>
+        </div>
+        <h2 class="card-title">Rate Limiting, Three Ways</h2>
+        <p class="card-desc">Visual and interactive simulator of rate limiting algorithms: Fixed Window counter, Token Bucket, and Leaky Bucket with real-time burst simulations.</p>
+        <div class="tags">
+          <span class="tag">Token Bucket</span>
+          <span class="tag">Leaky Bucket</span>
+          <span class="tag">Sliding Window</span>
+          <span class="tag">Throttling</span>
+        </div>
+        <div class="card-footer">
+          <span>Explore Interactive Module</span>
+          <span class="arrow-icon">→</span>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>Curated by <a href="https://github.com/vinaytheprogrammer" target="_blank" rel="noopener noreferrer">@vinaytheprogrammer</a> &middot; Built for engineers learning System Design</p>
+  </footer>
+
+  <script>
+    // Search Filter
+    const searchInput = document.getElementById('searchInput');
+    const cards = document.querySelectorAll('.card');
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      cards.forEach(card => {
+        const text = (card.textContent + ' ' + (card.dataset.keywords || '')).toLowerCase();
+        if (!q || text.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+
+    // Theme Switcher
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('lsd-theme', theme);
+      themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    const savedTheme = localStorage.getItem('lsd-theme') || 
+      (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    setTheme(savedTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>
