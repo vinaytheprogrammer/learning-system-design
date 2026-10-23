@@ -1,0 +1,408 @@
+/* ==========================================================================
+   Universal Blog / Publication Navigation for System Design Field Guide
+   ========================================================================== */
+
+:root {
+  --lsd-nav-bg: rgba(13, 17, 23, 0.88);
+  --lsd-nav-border: rgba(255, 255, 255, 0.1);
+  --lsd-nav-text: #F0F6FC;
+  --lsd-nav-muted: #8B949E;
+  --lsd-nav-primary: #38BDF8;
+  --lsd-nav-primary-rgb: 56, 189, 248;
+  --lsd-nav-accent: #818CF8;
+  --lsd-nav-hover: rgba(255, 255, 255, 0.08);
+  --lsd-nav-card-bg: rgba(22, 27, 34, 0.95);
+  --lsd-nav-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --lsd-nav-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Light mode adjustments if page is in light theme */
+[data-theme="light"] {
+  --lsd-nav-bg: rgba(255, 255, 255, 0.9);
+  --lsd-nav-border: rgba(0, 0, 0, 0.1);
+  --lsd-nav-text: #1F2937;
+  --lsd-nav-muted: #6B7280;
+  --lsd-nav-primary: #0284C7;
+  --lsd-nav-primary-rgb: 2, 132, 199;
+  --lsd-nav-accent: #6366F1;
+  --lsd-nav-hover: rgba(0, 0, 0, 0.05);
+  --lsd-nav-card-bg: rgba(255, 255, 255, 0.98);
+}
+
+/* 1. Global Reading Progress Bar */
+#lsd-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--lsd-nav-primary), var(--lsd-nav-accent));
+  z-index: 100000;
+  transition: width 0.1s ease-out;
+  box-shadow: 0 0 10px rgba(var(--lsd-nav-primary-rgb), 0.5);
+}
+
+/* 2. Universal Sticky Top Nav */
+.lsd-top-nav {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  background: var(--lsd-nav-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--lsd-nav-border);
+  z-index: 99999;
+  font-family: var(--lsd-nav-font);
+  color: var(--lsd-nav-text);
+  box-sizing: border-box;
+}
+
+.lsd-nav-container {
+  max-width: 1280px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.lsd-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.lsd-hub-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--lsd-nav-text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.lsd-hub-link:hover {
+  background: var(--lsd-nav-hover);
+  border-color: var(--lsd-nav-border);
+}
+
+.lsd-hub-badge {
+  background: linear-gradient(135deg, var(--lsd-nav-primary), var(--lsd-nav-accent));
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.lsd-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--lsd-nav-border);
+}
+
+/* Chapter Switcher Menu Trigger */
+.lsd-chapter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--lsd-nav-hover);
+  border: 1px solid var(--lsd-nav-border);
+  border-radius: 8px;
+  color: var(--lsd-nav-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lsd-chapter-trigger:hover {
+  border-color: var(--lsd-nav-primary);
+  background: rgba(var(--lsd-nav-primary-rgb), 0.1);
+}
+
+.lsd-chapter-num {
+  font-family: var(--lsd-nav-mono);
+  font-size: 0.75rem;
+  color: var(--lsd-nav-primary);
+}
+
+.lsd-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lsd-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  background: var(--lsd-nav-hover);
+  border: 1px solid var(--lsd-nav-border);
+  border-radius: 6px;
+  color: var(--lsd-nav-text);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.lsd-nav-btn:hover:not(.disabled) {
+  border-color: var(--lsd-nav-primary);
+  color: var(--lsd-nav-primary);
+  transform: translateY(-1px);
+}
+
+.lsd-nav-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 3. Chapter Dropdown Menu Overlay */
+.lsd-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 999999;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 70px;
+}
+
+.lsd-menu-overlay.active {
+  display: flex;
+  animation: lsdFadeIn 0.2s ease;
+}
+
+@keyframes lsdFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lsd-menu-panel {
+  background: var(--lsd-nav-card-bg);
+  border: 1px solid var(--lsd-nav-border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 620px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  font-family: var(--lsd-nav-font);
+}
+
+.lsd-menu-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--lsd-nav-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lsd-menu-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--lsd-nav-text);
+}
+
+.lsd-menu-close {
+  background: none;
+  border: none;
+  color: var(--lsd-nav-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.lsd-menu-close:hover {
+  color: var(--lsd-nav-text);
+  background: var(--lsd-nav-hover);
+}
+
+.lsd-menu-list {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.lsd-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--lsd-nav-text);
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.lsd-menu-item:hover {
+  background: var(--lsd-nav-hover);
+  border-color: var(--lsd-nav-border);
+}
+
+.lsd-menu-item.current {
+  background: rgba(var(--lsd-nav-primary-rgb), 0.12);
+  border-color: rgba(var(--lsd-nav-primary-rgb), 0.35);
+}
+
+.lsd-item-icon {
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--lsd-nav-hover);
+}
+
+.lsd-item-info {
+  flex: 1;
+}
+
+.lsd-item-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lsd-item-desc {
+  font-size: 0.78rem;
+  color: var(--lsd-nav-muted);
+  margin-top: 0.15rem;
+}
+
+.lsd-item-badge {
+  font-family: var(--lsd-nav-mono);
+  font-size: 0.7rem;
+  color: var(--lsd-nav-primary);
+  background: rgba(var(--lsd-nav-primary-rgb), 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* 4. Bottom Article Pagination Section (Previous & Next Post) */
+.lsd-bottom-nav {
+  max-width: 980px;
+  margin: 4rem auto 2.5rem;
+  padding: 0 1.5rem;
+  font-family: var(--lsd-nav-font);
+  box-sizing: border-box;
+}
+
+.lsd-pagination-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.lsd-pagination-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  background: var(--lsd-nav-card-bg);
+  border: 1px solid var(--lsd-nav-border);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.lsd-pagination-card:hover {
+  border-color: var(--lsd-nav-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.lsd-pagination-card.next {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.lsd-pagination-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lsd-nav-primary);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lsd-pagination-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--lsd-nav-text);
+  line-height: 1.35;
+}
+
+.lsd-bottom-hub-bar {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--lsd-nav-border);
+}
+
+.lsd-bottom-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  background: var(--lsd-nav-hover);
+  border: 1px solid var(--lsd-nav-border);
+  color: var(--lsd-nav-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.lsd-bottom-hub-btn:hover {
+  background: var(--lsd-nav-primary);
+  color: white;
+  border-color: var(--lsd-nav-primary);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 680px) {
+  .lsd-chapter-name {
+    display: none;
+  }
+  .lsd-pagination-grid {
+    grid-template-columns: 1fr;
+  }
+  .lsd-pagination-card.next {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
