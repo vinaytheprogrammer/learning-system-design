@@ -1,0 +1,2257 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Docker &amp; Kubernetes — The Shipping Yard Theory of Software</title>
+    <style>
+        :root {
+            color-scheme: light
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #faf9f5;
+            color: #141413
+        }
+
+        img {
+            max-width: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        :root {
+            --bg: #EFEDE3;
+            --panel: #FFFFFF;
+            --panel-2: #F7F3E7;
+            --ink: #1C1A13;
+            --ink-muted: #5E584A;
+            --border: rgba(28, 26, 19, 0.14);
+            --border-strong: rgba(28, 26, 19, 0.27);
+            --docker: #0E6FC7;
+            --docker-soft: rgba(14, 111, 199, 0.10);
+            --k8s: #A5650C;
+            --k8s-soft: rgba(165, 101, 12, 0.10);
+            --caution: #8A6A00;
+            --caution-bg: #F4D869;
+            --ok: #1C7A4A;
+            --bad: #A8432B;
+            --shadow: 0 1px 2px rgba(20, 18, 12, 0.07), 0 10px 26px -14px rgba(20, 18, 12, 0.24);
+            --font-display: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+            --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            --radius: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #10141A;
+                --panel: #171C23;
+                --panel-2: #1C222A;
+                --ink: #E9E5D7;
+                --ink-muted: #9B9684;
+                --border: rgba(233, 229, 215, 0.12);
+                --border-strong: rgba(233, 229, 215, 0.22);
+                --docker: #52AEFA;
+                --docker-soft: rgba(82, 174, 250, 0.14);
+                --k8s: #F0A94E;
+                --k8s-soft: rgba(240, 169, 78, 0.14);
+                --caution: #F2C53D;
+                --caution-bg: #3A3215;
+                --ok: #4FBE82;
+                --bad: #E28569;
+                --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 26px -14px rgba(0, 0, 0, 0.55);
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #10141A;
+            --panel: #171C23;
+            --panel-2: #1C222A;
+            --ink: #E9E5D7;
+            --ink-muted: #9B9684;
+            --border: rgba(233, 229, 215, 0.12);
+            --border-strong: rgba(233, 229, 215, 0.22);
+            --docker: #52AEFA;
+            --docker-soft: rgba(82, 174, 250, 0.14);
+            --k8s: #F0A94E;
+            --k8s-soft: rgba(240, 169, 78, 0.14);
+            --caution: #F2C53D;
+            --caution-bg: #3A3215;
+            --ok: #4FBE82;
+            --bad: #E28569;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 26px -14px rgba(0, 0, 0, 0.55);
+        }
+
+        :root[data-theme="light"] {
+            --bg: #EFEDE3;
+            --panel: #FFFFFF;
+            --panel-2: #F7F3E7;
+            --ink: #1C1A13;
+            --ink-muted: #5E584A;
+            --border: rgba(28, 26, 19, 0.14);
+            --border-strong: rgba(28, 26, 19, 0.27);
+            --docker: #0E6FC7;
+            --docker-soft: rgba(14, 111, 199, 0.10);
+            --k8s: #A5650C;
+            --k8s-soft: rgba(165, 101, 12, 0.10);
+            --caution: #8A6A00;
+            --caution-bg: #F4D869;
+            --ok: #1C7A4A;
+            --bad: #A8432B;
+            --shadow: 0 1px 2px rgba(20, 18, 12, 0.07), 0 10px 26px -14px rgba(20, 18, 12, 0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--font-sans);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--k8s);
+            color: #1a1200;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: var(--font-display);
+            font-weight: 800;
+            text-wrap: balance;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        code,
+        pre,
+        .mono {
+            font-family: var(--font-display);
+        }
+
+        .eyebrow {
+            font-family: var(--font-display);
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin: 0 0 10px;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .wrap-wide {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .lede {
+            color: var(--ink-muted);
+            max-width: 62ch;
+            margin: 14px 0 0;
+            font-size: 1.02rem;
+        }
+
+        #progressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--k8s);
+            z-index: 60;
+            width: 0%;
+            transition: width .1s linear;
+        }
+
+        /* ---------------- HERO ---------------- */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 96px 0 48px;
+            border-bottom: 1px solid var(--border);
+            background:
+                radial-gradient(1200px 500px at 50% -10%, var(--docker-soft), transparent 60%);
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            z-index: 0;
+            opacity: .5;
+            background: conic-gradient(from 0deg, transparent 0 85%, var(--k8s-soft) 92%, transparent 100%);
+            animation: beacon 16s linear infinite;
+        }
+
+        @keyframes beacon {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.1rem, 4.8vw, 3.3rem);
+            line-height: 1.07;
+            max-width: 16ch;
+        }
+
+        .hero-sub {
+            max-width: 58ch;
+            font-size: 1.08rem;
+            color: var(--ink-muted);
+            margin: 18px 0 0;
+        }
+
+        .yard {
+            margin-top: 40px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 130px;
+        }
+
+        .crate {
+            width: 64px;
+            border-radius: 4px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(24px);
+            animation: riseIn .6s ease forwards;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14) 0 2px, transparent 2px 9px);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+
+        .crate::before {
+            content: attr(data-tag);
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 9px;
+            letter-spacing: .08em;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .crate.c1 {
+            height: 56px;
+            background: var(--docker);
+            animation-delay: .05s;
+        }
+
+        .crate.c2 {
+            height: 90px;
+            background: var(--k8s);
+            animation-delay: .18s;
+        }
+
+        .crate.c3 {
+            height: 70px;
+            background: var(--docker);
+            animation-delay: .1s;
+        }
+
+        .crate.c4 {
+            height: 118px;
+            background: var(--k8s);
+            animation-delay: .3s;
+        }
+
+        .crate.c5 {
+            height: 60px;
+            background: var(--docker);
+            animation-delay: .22s;
+        }
+
+        .crate.c6 {
+            height: 98px;
+            background: var(--k8s);
+            animation-delay: .14s;
+        }
+
+        .crate.c7 {
+            height: 76px;
+            background: var(--docker);
+            animation-delay: .26s;
+        }
+
+        @keyframes riseIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero::before {
+                animation: none;
+            }
+
+            .crate {
+                opacity: 1;
+                transform: none;
+                animation: none;
+            }
+        }
+
+        /* ---------------- TABBAR ---------------- */
+        .tabbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: color-mix(in srgb, var(--bg) 88%, transparent);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tabbar-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+        }
+
+        .tabbar button {
+            appearance: none;
+            border: none;
+            background: none;
+            font-family: var(--font-display);
+            font-size: 12.5px;
+            color: var(--ink-muted);
+            padding: 14px 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            border-bottom: 2px solid transparent;
+            transition: color .15s ease;
+        }
+
+        .tabbar button:hover {
+            color: var(--ink);
+        }
+
+        .tabbar button:focus-visible {
+            outline: 2px solid var(--k8s);
+            outline-offset: -2px;
+            border-radius: 4px;
+        }
+
+        .tabbar button.active {
+            color: var(--ink);
+            border-bottom-color: var(--k8s);
+        }
+
+        main {
+            padding-bottom: 40px;
+        }
+
+        section.block {
+            padding: 66px 0;
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        section.block.revealed {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            section.block {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        .modtag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-strong);
+            margin-bottom: 14px;
+        }
+
+        .modtag.docker {
+            color: var(--docker);
+            border-color: color-mix(in srgb, var(--docker) 45%, var(--border-strong));
+        }
+
+        .modtag.k8s {
+            color: var(--k8s);
+            border-color: color-mix(in srgb, var(--k8s) 45%, var(--border-strong));
+        }
+
+        .modtag.caution {
+            color: var(--caution);
+            border-color: color-mix(in srgb, var(--caution) 45%, var(--border-strong));
+        }
+
+        .modtag .plate {
+            font-weight: 800;
+        }
+
+        section.block h2 {
+            font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+        }
+
+        h3.sub {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 40px;
+            color: var(--ink);
+        }
+
+        h3.sub .n {
+            color: var(--ink-muted);
+            font-weight: 500;
+            margin-right: 6px;
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .scrollx {
+            overflow-x: auto;
+        }
+
+        /* rivet card: corrugated container plate */
+        .plate-card {
+            position: relative;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            padding: 18px 20px;
+            background: var(--panel-2);
+        }
+
+        .plate-card::before,
+        .plate-card::after {
+            content: "";
+            position: absolute;
+            top: 7px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--border-strong);
+        }
+
+        .plate-card::before {
+            left: 7px;
+        }
+
+        .plate-card::after {
+            right: 7px;
+        }
+
+        /* terminal chrome */
+        .term {
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #1A1D16;
+            box-shadow: var(--shadow);
+        }
+
+        .term-bar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 12px;
+            background: #23261C;
+        }
+
+        .term-bar .d {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .term-bar .d1 {
+            background: #E8685A;
+        }
+
+        .term-bar .d2 {
+            background: #E8C04E;
+        }
+
+        .term-bar .d3 {
+            background: #58C47E;
+        }
+
+        .term-bar .fname {
+            margin-left: 8px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: #A8A693;
+        }
+
+        .term pre {
+            margin: 0;
+            padding: 14px 16px;
+            color: #E7E4D4;
+            font-size: 12.8px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .term .c1 {
+            color: #7FB8E8;
+        }
+
+        .term .c2 {
+            color: #9BD989;
+        }
+
+        .term .c3 {
+            color: #E0B870;
+        }
+
+        .term .c4 {
+            color: #8A8870;
+        }
+
+        .diff {
+            margin: 0;
+            padding: 14px 0;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13.5px;
+            overflow: hidden;
+        }
+
+        .diff .row {
+            padding: 3px 16px;
+            white-space: pre-wrap;
+            display: block;
+        }
+
+        .diff .plus {
+            color: var(--ok);
+        }
+
+        .diff .minus {
+            color: var(--bad);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        @media (max-width:720px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .bp-list {
+            margin: 16px 0 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bp-list li {
+            display: flex;
+            gap: 10px;
+            font-size: 14.5px;
+            align-items: flex-start;
+        }
+
+        .bp-list li::before {
+            content: "→";
+            font-family: var(--font-display);
+            color: var(--c, var(--ink-muted));
+            flex: none;
+            margin-top: 1px;
+        }
+
+        button.btn {
+            font-family: var(--font-display);
+            font-size: 12.5px;
+            border: 1px solid var(--border-strong);
+            background: var(--panel-2);
+            color: var(--ink);
+            padding: 8px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, transform .1s;
+        }
+
+        button.btn:hover {
+            background: var(--k8s-soft);
+            border-color: var(--k8s);
+        }
+
+        button.btn:active {
+            transform: scale(.97);
+        }
+
+        button.btn:focus-visible {
+            outline: 2px solid var(--k8s);
+            outline-offset: 1px;
+        }
+
+        button.btn.primary {
+            background: var(--k8s);
+            border-color: var(--k8s);
+            color: #1a1200;
+            font-weight: 700;
+        }
+
+        button.btn.blue {
+            background: var(--docker);
+            border-color: var(--docker);
+            color: #06111c;
+            font-weight: 700;
+        }
+
+        /* ================= MODULE 1 ================= */
+        .mismatch {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 26px;
+            flex-wrap: wrap;
+        }
+
+        .mismatch .term {
+            flex: 1 1 280px;
+            max-width: 360px;
+        }
+
+        .mismatch .bolt {
+            font-family: var(--font-display);
+            font-size: 22px;
+            color: var(--bad);
+            flex: none;
+        }
+
+        .yard2 {
+            margin-top: 26px;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 120px;
+            align-items: flex-end;
+        }
+
+        .yard2 .box {
+            width: 52px;
+            border: 1px solid var(--border-strong);
+            border-radius: 4px;
+            background: var(--panel-2);
+            transition: transform .7s cubic-bezier(.2, .8, .2, 1), background .4s;
+        }
+
+        .chaos .box {
+            height: 70px;
+        }
+
+        .chaos .box:nth-child(1) {
+            transform: translateY(8px) rotate(-11deg) translateX(-6px);
+        }
+
+        .chaos .box:nth-child(2) {
+            transform: translateY(-14px) rotate(7deg) translateX(10px);
+            height: 50px;
+        }
+
+        .chaos .box:nth-child(3) {
+            transform: translateY(4px) rotate(-4deg);
+            height: 86px;
+        }
+
+        .chaos .box:nth-child(4) {
+            transform: translateY(-6px) rotate(13deg) translateX(-10px);
+            height: 40px;
+        }
+
+        .chaos .box:nth-child(5) {
+            transform: translateY(10px) rotate(-8deg) translateX(8px);
+            height: 95px;
+        }
+
+        .chaos .box:nth-child(6) {
+            transform: translateY(-2px) rotate(5deg);
+            height: 60px;
+        }
+
+        .yard2.ordered .box {
+            transform: none !important;
+            height: 76px;
+            background: var(--docker);
+            border-color: var(--docker);
+        }
+
+        .yard2-caption {
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 11.5px;
+            color: var(--ink-muted);
+            margin-top: 10px;
+            transition: color .3s;
+        }
+
+        .yard2.ordered+.yard2-caption {
+            color: var(--docker);
+        }
+
+        .stack-compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        @media (max-width:700px) {
+            .stack-compare {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stack-col h4 {
+            font-family: var(--font-display);
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 10px;
+            color: var(--ink-muted);
+        }
+
+        .stack-bars {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+        }
+
+        .sbar {
+            padding: 9px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            opacity: 0;
+            transform: scaleY(.4);
+            transform-origin: bottom;
+            transition: opacity .5s ease, transform .5s ease;
+        }
+
+        .revealed .sbar {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+
+        .sbar.host {
+            background: var(--panel-2);
+            border: 1px dashed var(--border-strong);
+            color: var(--ink-muted);
+        }
+
+        .sbar.hyper {
+            background: var(--border);
+            color: var(--ink-muted);
+        }
+
+        .sbar.guest {
+            background: var(--k8s-soft);
+            color: var(--k8s);
+            border: 1px solid var(--k8s);
+        }
+
+        .sbar.engine {
+            background: var(--docker-soft);
+            color: var(--docker);
+            border: 1px solid var(--docker);
+        }
+
+        .sbar.app {
+            background: var(--docker);
+            color: #06111c;
+            font-weight: 700;
+        }
+
+        .sbar.appv {
+            background: var(--k8s);
+            color: #1a1200;
+            font-weight: 700;
+        }
+
+        /* ================= MODULE 2 ================= */
+        .pipeline {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pipe-step {
+            flex: 1 1 200px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            background: var(--panel);
+            position: relative;
+            transition: border-color .3s, box-shadow .3s, transform .3s;
+        }
+
+        .pipe-step.active {
+            border-color: var(--docker);
+            box-shadow: 0 0 0 3px var(--docker-soft);
+            transform: translateY(-3px);
+        }
+
+        .pipe-step .pn {
+            font-family: var(--font-display);
+            font-size: 11px;
+            color: var(--ink-muted);
+        }
+
+        .pipe-step h4 {
+            font-size: 14.5px;
+            margin: 6px 0 6px;
+        }
+
+        .pipe-step p {
+            margin: 0;
+            font-size: 12.8px;
+            color: var(--ink-muted);
+        }
+
+        .pipe-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            flex: none;
+            font-family: var(--font-display);
+            color: var(--ink-muted);
+        }
+
+        @media (max-width:760px) {
+            .pipe-arrow {
+                width: 100%;
+                transform: rotate(90deg);
+                padding: 4px 0;
+            }
+        }
+
+        .lego-wrap {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 26px;
+        }
+
+        .lego-stack {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+            width: 220px;
+        }
+
+        .brick {
+            padding: 11px 14px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-family: var(--font-display);
+            border: 1px solid var(--border-strong);
+            transition: background .3s, transform .3s, box-shadow .3s;
+        }
+
+        .brick.base {
+            background: var(--panel-2);
+            color: var(--ink-muted);
+        }
+
+        .brick.deps {
+            background: var(--panel-2);
+            color: var(--ink-muted);
+        }
+
+        .brick.code {
+            background: var(--docker-soft);
+            color: var(--docker);
+            border-color: var(--docker);
+        }
+
+        .brick.code.swapped {
+            animation: flash .7s ease;
+        }
+
+        @keyframes flash {
+            0% {
+                background: var(--docker);
+                color: #06111c;
+                transform: scale(1.03);
+            }
+
+            100% {
+                background: var(--docker-soft);
+                color: var(--docker);
+                transform: scale(1);
+            }
+        }
+
+        .lego-log {
+            flex: 1 1 260px;
+            min-width: 220px;
+        }
+
+        .lego-log .readout {
+            font-family: var(--font-display);
+            font-size: 12.5px;
+            color: var(--ink-muted);
+            min-height: 40px;
+        }
+
+        .cache-tag {
+            font-family: var(--font-display);
+            font-size: 9.5px;
+            color: var(--ink-muted);
+            margin-left: 8px;
+        }
+
+        .shelf {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .shelf-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 10px;
+            text-align: center;
+            background: var(--panel-2);
+            transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+            cursor: default;
+        }
+
+        .shelf-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+            border-color: var(--docker);
+        }
+
+        .shelf-item b {
+            display: block;
+            font-size: 13px;
+            font-family: var(--font-display);
+        }
+
+        .shelf-item span {
+            font-size: 11px;
+            color: var(--ink-muted);
+        }
+
+        /* ================= MODULE 3 ================= */
+        .stat-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            flex: 1 1 140px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            background: var(--panel);
+            text-align: center;
+        }
+
+        .stat b {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 22px;
+            color: var(--k8s);
+        }
+
+        .stat span {
+            font-size: 11.5px;
+            color: var(--ink-muted);
+        }
+
+        .sim-panel {
+            margin-top: 28px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            overflow: hidden;
+        }
+
+        .sim-toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+            gap: 8px;
+            padding: 22px;
+        }
+
+        .unit {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            background: var(--k8s-soft);
+            border: 1px solid var(--k8s);
+            transition: background .4s, border-color .4s, transform .3s, opacity .4s;
+        }
+
+        .unit.hidden-slot {
+            opacity: 0;
+            transform: scale(.5);
+            border-style: dashed;
+            background: transparent;
+        }
+
+        .unit.dying {
+            background: var(--bad);
+            border-color: var(--bad);
+            animation: shake .4s ease;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-3px);
+            }
+
+            75% {
+                transform: translateX(3px);
+            }
+        }
+
+        .unit.spawning {
+            background: var(--ok);
+            border-color: var(--ok);
+            transform: scale(1.12);
+        }
+
+        .sim-log {
+            font-family: var(--font-display);
+            font-size: 12px;
+            color: var(--ink-muted);
+            padding: 0 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-height: 60px;
+        }
+
+        .sim-log .ok {
+            color: var(--ok);
+        }
+
+        .sim-log .bad {
+            color: var(--bad);
+        }
+
+        .sim-log .info {
+            color: var(--k8s);
+        }
+
+        /* ================= MODULE 4 ================= */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        @media (max-width:760px) {
+            .concept-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .concept-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 220px;
+        }
+
+        .concept-card .ctitle {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .concept-card .cdesc {
+            font-size: 13.3px;
+            color: var(--ink-muted);
+            margin: 0;
+        }
+
+        .concept-visual {
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* pod rings */
+        .pod-glyph {
+            position: relative;
+            width: 34px;
+            height: 34px;
+        }
+
+        .pod-core {
+            position: absolute;
+            inset: 11px;
+            border-radius: 50%;
+            background: var(--k8s);
+        }
+
+        .pod-ring {
+            position: absolute;
+            inset: 0;
+            border: 1.5px solid var(--k8s);
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulse 2.4s ease-out infinite;
+        }
+
+        .pod-ring.r2 {
+            animation-delay: .8s;
+        }
+
+        .pod-ring.r3 {
+            animation-delay: 1.6s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(.3);
+                opacity: .9;
+            }
+
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+        }
+
+        /* deployment counter */
+        .counter-badge {
+            font-family: var(--font-display);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--k8s);
+        }
+
+        .counter-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .counter-sub {
+            font-size: 11px;
+            color: var(--ink-muted);
+            font-family: var(--font-display);
+        }
+
+        /* service/ingress flow */
+        .flow {
+            width: 100%;
+            height: 76px;
+            position: relative;
+        }
+
+        .flow .node {
+            position: absolute;
+            font-family: var(--font-display);
+            font-size: 9.5px;
+            padding: 4px 7px;
+            border: 1px solid var(--border-strong);
+            border-radius: 4px;
+            background: var(--panel-2);
+            white-space: nowrap;
+        }
+
+        .flow .n1 {
+            left: 0;
+            top: 30px;
+        }
+
+        .flow .n2 {
+            left: 38%;
+            top: 30px;
+            transform: translateX(-50%);
+        }
+
+        .flow .n3 {
+            left: 72%;
+            top: 4px;
+        }
+
+        .flow .n4 {
+            left: 72%;
+            top: 52px;
+        }
+
+        .dot-travel {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--k8s);
+            top: 33px;
+            left: 0;
+            animation: travel 2.6s linear infinite;
+        }
+
+        .dot-travel.d2 {
+            animation-delay: 1.3s;
+        }
+
+        @keyframes travel {
+            0% {
+                left: 4%;
+                opacity: 0;
+            }
+
+            8% {
+                opacity: 1;
+            }
+
+            45% {
+                left: 36%;
+                top: 33px;
+            }
+
+            55% {
+                left: 36%;
+            }
+
+            70% {
+                left: 70%;
+                top: 9px;
+            }
+
+            100% {
+                left: 94%;
+                top: 9px;
+                opacity: 0;
+            }
+        }
+
+        /* node cluster */
+        .cluster {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            width: 100%;
+        }
+
+        .node-box {
+            border: 1px solid var(--border-strong);
+            border-radius: 5px;
+            padding: 5px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            animation: nodeglow 6s ease-in-out infinite;
+        }
+
+        .node-box:nth-child(2) {
+            animation-delay: 1.5s;
+        }
+
+        .node-box:nth-child(3) {
+            animation-delay: 3s;
+        }
+
+        .node-box:nth-child(4) {
+            animation-delay: 4.5s;
+        }
+
+        .node-box span {
+            display: block;
+            aspect-ratio: 1;
+            background: var(--docker-soft);
+            border-radius: 2px;
+        }
+
+        @keyframes nodeglow {
+
+            0%,
+            80%,
+            100% {
+                box-shadow: none;
+                border-color: var(--border-strong);
+            }
+
+            10% {
+                box-shadow: 0 0 0 2px var(--k8s-soft);
+                border-color: var(--k8s);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .pod-ring,
+            .dot-travel,
+            .node-box {
+                animation: none !important;
+            }
+        }
+
+        /* ================= MODULE 5 ================= */
+        .state-sim {
+            margin-top: 26px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            padding: 22px;
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .container-box {
+            width: 140px;
+            height: 100px;
+            border: 2px solid var(--docker);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--docker-soft);
+            flex: none;
+            transition: transform .3s;
+        }
+
+        .container-box.resetting {
+            animation: reset-spin .6s ease;
+        }
+
+        @keyframes reset-spin {
+            50% {
+                transform: scale(.92) rotate(-2deg);
+                border-color: var(--bad);
+            }
+        }
+
+        .container-box .clabel {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--panel);
+            padding: 0 6px;
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: var(--docker);
+        }
+
+        .file-chip {
+            font-family: var(--font-display);
+            font-size: 11px;
+            background: var(--panel);
+            border: 1px solid var(--border-strong);
+            padding: 5px 9px;
+            border-radius: 5px;
+            transition: all .6s ease;
+            position: relative;
+        }
+
+        .file-chip.gone {
+            opacity: 0;
+            transform: translateY(14px) scale(.6);
+        }
+
+        .arrow-slot {
+            width: 50px;
+            text-align: center;
+            font-family: var(--font-display);
+            color: var(--ink-muted);
+        }
+
+        .volume-box {
+            width: 110px;
+            height: 100px;
+            border: 2px dashed var(--border-strong);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+            position: relative;
+            transition: border-color .3s;
+        }
+
+        .volume-box .clabel {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--panel);
+            padding: 0 6px;
+            font-family: var(--font-display);
+            font-size: 10px;
+            color: var(--ink-muted);
+        }
+
+        .volume-box.active {
+            border-color: var(--ok);
+            border-style: solid;
+        }
+
+        .state-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 220px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+        }
+
+        .state-log {
+            font-family: var(--font-display);
+            font-size: 12px;
+            color: var(--ink-muted);
+            min-height: 34px;
+        }
+
+        .state-log .ok {
+            color: var(--ok);
+        }
+
+        .state-log .bad {
+            color: var(--bad);
+        }
+
+        .cfg-tabs {
+            display: flex;
+            gap: 6px;
+            margin-top: 24px;
+        }
+
+        .cfg-tabs button {
+            font-family: var(--font-display);
+            font-size: 12px;
+            padding: 7px 13px;
+            border-radius: 6px 6px 0 0;
+            border: 1px solid var(--border-strong);
+            border-bottom: none;
+            background: var(--panel-2);
+            color: var(--ink-muted);
+            cursor: pointer;
+        }
+
+        .cfg-tabs button.active {
+            background: #1A1D16;
+            color: #E7E4D4;
+        }
+
+        .caution-box {
+            margin-top: 20px;
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            background: var(--caution-bg);
+            color: #1a1400;
+            position: relative;
+            overflow: hidden;
+        }
+
+        :root[data-theme="dark"] .caution-box,
+        @media (prefers-color-scheme:dark) {
+            .caution-box {
+                color: #2a2000;
+            }
+        }
+
+        .caution-box::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 6px;
+            background: repeating-linear-gradient(45deg, #1a1400 0 10px, var(--caution-bg) 10px 20px);
+            opacity: .5;
+        }
+
+        .caution-box b {
+            font-family: var(--font-display);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .caution-box p {
+            margin: 0;
+            font-size: 13.5px;
+        }
+
+        .ticket {
+            margin-top: 28px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            background: var(--panel-2);
+            padding: 22px 24px;
+            position: relative;
+        }
+
+        .ticket::before,
+        .ticket::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--bg);
+            transform: translateY(-50%);
+        }
+
+        .ticket::before {
+            left: -9px;
+        }
+
+        .ticket::after {
+            right: -9px;
+        }
+
+        .ticket ol {
+            margin: 0;
+            padding-left: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .ticket-foot {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+
+        footer {
+            padding: 40px 0 60px;
+        }
+
+        footer .wrap {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+
+    <div id="progressBar"></div>
+
+    <header class="hero">
+        <div class="wrap hero-inner">
+            <p class="eyebrow">The Shipping Yard Theory of Software</p>
+            <h1>Docker &amp; Kubernetes, Explained Like You've Never Coded a Day</h1>
+            <p class="hero-sub">Two technologies, one idea: <em>standardize the box, then coordinate the fleet.</em>
+                Docker builds the box. Kubernetes runs the entire shipping yard. Here's everything you need for an
+                interview — in plain language.</p>
+            <div class="yard">
+                <div class="crate c1" data-tag="APP"></div>
+                <div class="crate c2" data-tag="K8S"></div>
+                <div class="crate c3" data-tag="ENV"></div>
+                <div class="crate c4" data-tag="PODS"></div>
+                <div class="crate c5" data-tag="RUN"></div>
+                <div class="crate c6" data-tag="NODE"></div>
+                <div class="crate c7" data-tag="IMG"></div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="tabbar" id="tabbar">
+        <div class="tabbar-inner">
+            <button data-target="m1">01 · The Why</button>
+            <button data-target="m2">02 · Docker</button>
+            <button data-target="m3">03 · Why K8s</button>
+            <button data-target="m4">04 · Core Concepts</button>
+            <button data-target="m5">05 · Interview Prep</button>
+        </div>
+    </nav>
+
+    <main>
+
+        <!-- ============ MODULE 1 ============ -->
+        <section class="block" id="m1">
+            <div class="wrap">
+                <span class="modtag docker"><span class="plate">CONTAINER NO. 01</span> · The Why</span>
+                <h2>Before the code: why does software break when it moves?</h2>
+                <p class="lede">Before learning any commands, you need to understand the problem Docker was built to
+                    kill. It's not a bug in your code — it's a mismatch between worlds.</p>
+
+                <h3 class="sub"><span class="n">1.1</span>The "It Works on My Machine" Problem</h3>
+                <p class="lede" style="font-size:14.5px">Your laptop and a cloud server are two different worlds
+                    pretending to be the same one.</p>
+                <div class="mismatch">
+                    <div class="term">
+                        <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                                class="d d3"></span><span class="fname">your-laptop</span></div>
+                        <pre><span class="c4">$</span> python --version
+<span class="c2">Python 3.11.4</span>
+<span class="c4">$</span> <span class="c3">✓ runs perfectly</span></pre>
+                    </div>
+                    <div class="bolt">⚡︎</div>
+                    <div class="term">
+                        <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                                class="d d3"></span><span class="fname">prod-server</span></div>
+                        <pre><span class="c4">$</span> python --version
+<span class="c2">Python 3.8.2</span>
+<span class="c4">$</span> <span style="color:#E8685A">✕ ModuleNotFoundError</span></pre>
+                    </div>
+                </div>
+                <p class="lede" style="font-size:14px;margin-top:14px">Same code. Different OS version, different
+                    dependency versions, maybe a missing library entirely. The app didn't change — the ground underneath
+                    it did.</p>
+
+                <h3 class="sub"><span class="n">1.2</span>The Shipping Container Analogy</h3>
+                <p class="lede" style="font-size:14.5px">Before the 1950s, cargo was chaos — crates, barrels, and sacks
+                    of every shape, each needing different handling at every port. Then the industry standardized the
+                    box. Watch what happens.</p>
+                <div class="yard2 chaos" id="chaosYard">
+                    <div class="box"></div>
+                    <div class="box"></div>
+                    <div class="box"></div>
+                    <div class="box"></div>
+                    <div class="box"></div>
+                    <div class="box"></div>
+                </div>
+                <div class="yard2-caption" id="chaosCaption">mismatched cargo — every crane needs to improvise</div>
+                <p class="lede" style="font-size:14px;margin-top:16px">Once every box is the <b>same standard shape</b>,
+                    any ship, train, or crane can move it without caring what's inside. <b>Docker is that standard box
+                        for software</b> — it packages your app plus its exact dependencies into one unit that runs
+                    identically anywhere a container engine exists.</p>
+
+                <h3 class="sub"><span class="n">1.3</span>Containers vs. Virtual Machines</h3>
+                <p class="lede" style="font-size:14.5px">A <b>Virtual Machine</b> is like renting an entire house — your
+                    own plumbing, your own wiring, a full operating system, just for you. A <b>Container</b> is like
+                    renting a room in a shared apartment — the building's infrastructure (the OS kernel) is shared, so
+                    your room is lighter, cheaper, and ready to move into instantly.</p>
+                <div class="stack-compare">
+                    <div class="stack-col">
+                        <h4>Virtual Machine</h4>
+                        <div class="stack-bars">
+                            <div class="sbar appv" style="transition-delay:.3s">App A</div>
+                            <div class="sbar guest" style="transition-delay:.25s">Guest OS (full copy)</div>
+                            <div class="sbar hyper" style="transition-delay:.2s">Hypervisor</div>
+                            <div class="sbar host" style="transition-delay:.15s">Host OS</div>
+                            <div class="sbar host" style="transition-delay:.1s">Physical Server</div>
+                        </div>
+                    </div>
+                    <div class="stack-col">
+                        <h4>Container</h4>
+                        <div class="stack-bars">
+                            <div class="sbar app" style="transition-delay:.3s">App A</div>
+                            <div class="sbar app" style="transition-delay:.27s;opacity:.85">App B</div>
+                            <div class="sbar engine" style="transition-delay:.2s">Docker Engine</div>
+                            <div class="sbar host" style="transition-delay:.15s">Host OS (shared)</div>
+                            <div class="sbar host" style="transition-delay:.1s">Physical Server</div>
+                        </div>
+                    </div>
+                </div>
+                <pre class="diff" style="margin-top:20px">
+<span class="row plus">+ Containers start in seconds, weigh megabytes, run dozens per laptop</span>
+<span class="row minus">- VMs take minutes to boot, weigh gigabytes, and duplicate a full OS each time</span></pre>
+            </div>
+        </section>
+
+        <!-- ============ MODULE 2 ============ -->
+        <section class="block" id="m2">
+            <div class="wrap">
+                <span class="modtag docker"><span class="plate">CONTAINER NO. 02</span> · Docker Fundamentals</span>
+                <h2>Building the box</h2>
+                <p class="lede">Three words confuse every beginner: Dockerfile, Image, Container. Here's the baking
+                    analogy that fixes it permanently.</p>
+
+                <h3 class="sub"><span class="n">2.1</span>The Core Trinity</h3>
+                <div class="pipeline" id="pipeline">
+                    <div class="pipe-step" data-step="1">
+                        <div class="pn">STEP 1</div>
+                        <h4>Dockerfile</h4>
+                        <p>The recipe. Plain text instructions: start here, install this, copy that. Not food yet — just
+                            steps.</p>
+                    </div>
+                    <div class="pipe-arrow">→</div>
+                    <div class="pipe-step" data-step="2">
+                        <div class="pn">STEP 2</div>
+                        <h4>Docker Image</h4>
+                        <p>The frozen cake mix. Run the recipe once (<code>docker build</code>) and get a static,
+                            ready-to-go snapshot.</p>
+                    </div>
+                    <div class="pipe-arrow">→</div>
+                    <div class="pipe-step" data-step="3">
+                        <div class="pn">STEP 3</div>
+                        <h4>Docker Container</h4>
+                        <p>The baked cake, served. Run the image (<code>docker run</code>) and it's alive — an actual
+                            working process.</p>
+                    </div>
+                </div>
+                <div class="term" style="margin-top:20px">
+                    <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                            class="d d3"></span><span class="fname">Dockerfile</span></div>
+                    <pre><span class="c1">FROM</span> node:20
+<span class="c1">WORKDIR</span> /app
+<span class="c1">COPY</span> package.json .
+<span class="c1">RUN</span> npm install
+<span class="c1">COPY</span> . .
+<span class="c1">CMD</span> [<span class="c2">"node"</span>, <span class="c2">"server.js"</span>]</pre>
+                </div>
+                <div class="term" style="margin-top:12px">
+                    <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                            class="d d3"></span><span class="fname">terminal</span></div>
+                    <pre><span class="c4">$</span> docker build -t my-app .      <span class="c4">// recipe → frozen image</span>
+<span class="c4">$</span> docker run -p 3000:3000 my-app  <span class="c4">// image → live container</span></pre>
+                </div>
+
+                <h3 class="sub"><span class="n">2.2</span>Layered Architecture</h3>
+                <p class="lede" style="font-size:14.5px">Docker images are built like stacked Lego bricks. Each
+                    instruction adds one brick on top of the last — and Docker caches every brick separately. Try
+                    changing just the top one.</p>
+                <div class="lego-wrap">
+                    <div class="lego-stack">
+                        <div class="brick code" id="codeBrick">COPY . . <span class="cache-tag">(rebuilds)</span></div>
+                        <div class="brick deps">RUN npm install <span class="cache-tag">(cached)</span></div>
+                        <div class="brick deps">COPY package.json . <span class="cache-tag">(cached)</span></div>
+                        <div class="brick base">FROM node:20 <span class="cache-tag">(cached)</span></div>
+                    </div>
+                    <div class="lego-log">
+                        <button class="btn blue" id="legoBtn">Edit application code</button>
+                        <div class="readout" id="legoReadout">Click to see what Docker actually rebuilds.</div>
+                    </div>
+                </div>
+                <p class="lede" style="font-size:14px;margin-top:14px">Three bricks stayed frozen. Only the top one —
+                    your actual code — got rebuilt. That's why Docker rebuilds are fast and disk-efficient: identical
+                    layers are reused, never duplicated.</p>
+
+                <h3 class="sub"><span class="n">2.3</span>Docker Registry — The App Store</h3>
+                <p class="lede" style="font-size:14.5px"><b>Docker Hub</b> is a public shelf of pre-built images. Need a
+                    database? Don't write a Dockerfile from scratch — pull the official one.</p>
+                <div class="shelf">
+                    <div class="shelf-item"><b>postgres</b><span>database</span></div>
+                    <div class="shelf-item"><b>nginx</b><span>web server</span></div>
+                    <div class="shelf-item"><b>redis</b><span>cache</span></div>
+                    <div class="shelf-item"><b>node</b><span>runtime</span></div>
+                    <div class="shelf-item"><b>python</b><span>runtime</span></div>
+                    <div class="shelf-item"><b>mongo</b><span>database</span></div>
+                </div>
+
+                <pre class="diff" style="margin-top:20px">
+<span class="row plus">+ docker pull postgres — tested, maintained, ready in seconds</span>
+<span class="row plus">+ docker push your-image — share your own builds with your team or the world</span></pre>
+            </div>
+        </section>
+
+        <!-- ============ MODULE 3 ============ -->
+        <section class="block" id="m3">
+            <div class="wrap-wide">
+                <span class="modtag k8s"><span class="plate">CONTAINER NO. 03</span> · Why Kubernetes</span>
+                <h2>From one container to a whole fleet</h2>
+                <p class="lede" style="max-width:66ch">Docker gives you one shipping container, perfectly packed. Great.
+                    Now your app goes viral.</p>
+
+                <div class="stat-row">
+                    <div class="stat"><b>500</b><span>containers to run</span></div>
+                    <div class="stat"><b>50</b><span>physical machines</span></div>
+                    <div class="stat"><b>0</b><span>humans who can track it by hand</span></div>
+                </div>
+
+                <h3 class="sub"><span class="n">3.1</span>The Orchestra Analogy</h3>
+                <p class="lede" style="font-size:14.5px">Each Docker container is one musician playing one instrument.
+                    Fine alone. Put 500 of them in a hall with no coordination and you get noise — people out of sync,
+                    too loud, some silent. <b>Kubernetes is the conductor.</b> It never plays an instrument itself — it
+                    just makes sure everyone plays together, on beat, and nobody goes quiet without being replaced.</p>
+
+                <h3 class="sub"><span class="n">3.2</span>Self-Healing &amp; Auto-Scaling — try it</h3>
+                <p class="lede" style="font-size:14.5px">You tell Kubernetes a <em>desired state</em> — "always keep 9
+                    running." It watches constantly and corrects reality to match. Simulate both below.</p>
+                <div class="sim-panel">
+                    <div class="sim-toolbar">
+                        <button class="btn primary" id="simCrash">Crash a random pod</button>
+                        <button class="btn primary" id="simSpike">Simulate traffic spike</button>
+                        <span
+                            style="font-family:var(--font-display);font-size:11.5px;color:var(--ink-muted);margin-left:auto;align-self:center;">desired
+                            replicas: <b id="desiredCount">9</b></span>
+                    </div>
+                    <div class="sim-grid" id="simGrid"></div>
+                    <div class="sim-log" id="simLog"><span>Watching 9/9 pods · all healthy</span></div>
+                </div>
+
+                <pre class="diff" style="margin-top:4px">
+<span class="row plus">+ A pod dies at 3 AM → Kubernetes notices and replaces it, no human paged</span>
+<span class="row plus">+ Traffic spikes → extra replicas spin up automatically, then scale back down</span></pre>
+            </div>
+        </section>
+
+        <!-- ============ MODULE 4 ============ -->
+        <section class="block" id="m4">
+            <div class="wrap-wide">
+                <span class="modtag k8s"><span class="plate">CONTAINER NO. 04</span> · Core Concepts</span>
+                <h2>The vocabulary, with pictures</h2>
+                <p class="lede">Four terms carry almost every Kubernetes conversation. Here's each one, made physical.
+                </p>
+
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <div class="concept-visual">
+                            <div class="pod-glyph">
+                                <div class="pod-ring"></div>
+                                <div class="pod-ring r2"></div>
+                                <div class="pod-ring r3"></div>
+                                <div class="pod-core"></div>
+                            </div>
+                        </div>
+                        <div class="ctitle">Pods — the spaceship</div>
+                        <p class="cdesc">The smallest deployable unit in Kubernetes. Think of a spaceship holding one or
+                            more astronauts (containers) that share the same life support — same network address, same
+                            storage. Usually one astronaut per ship; sometimes a helper rides along.</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-visual">
+                            <div class="counter-wrap">
+                                <div class="counter-badge" id="deployCounter">3/3</div>
+                                <div class="counter-sub">DESIRED REPLICAS</div>
+                            </div>
+                        </div>
+                        <div class="ctitle">Deployments — the manager</div>
+                        <p class="cdesc">A Deployment is a manager with one obsession: "I always want exactly 3 copies
+                            running." One dies? "Go hire a replacement, immediately." Ship a new version? It replaces
+                            Pods gradually so the app never fully goes dark.</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-visual">
+                            <div class="flow">
+                                <div class="node n1">Internet</div>
+                                <div class="node n2">Ingress</div>
+                                <div class="node n3">Service A</div>
+                                <div class="node n4">Service B</div>
+                                <div class="dot-travel"></div>
+                                <div class="dot-travel d2"></div>
+                            </div>
+                        </div>
+                        <div class="ctitle">Services &amp; Ingress — receptionist &amp; front door</div>
+                        <p class="cdesc">Pods are born and die constantly, so their addresses keep changing. A
+                            <b>Service</b> is a receptionist with one stable address, always routing you to a healthy
+                            Pod. <b>Ingress</b> is the front door for outside internet traffic, directing each visitor
+                            to the right Service.</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-visual">
+                            <div class="cluster">
+                                <div class="node-box"><span></span><span></span><span></span></div>
+                                <div class="node-box"><span></span><span></span><span></span></div>
+                                <div class="node-box"><span></span><span></span><span></span></div>
+                                <div class="node-box"><span></span><span></span><span></span></div>
+                            </div>
+                        </div>
+                        <div class="ctitle">Nodes &amp; Clusters — the warehouse floor</div>
+                        <p class="cdesc">A <b>Node</b> is one physical or virtual machine — one worker station on the
+                            warehouse floor, with its own CPU, memory, disk. A <b>Cluster</b> is the entire warehouse:
+                            every Node working together as one team, centrally managed by Kubernetes.</p>
+                    </div>
+                </div>
+
+                <h3 class="sub"><span class="n">4.1</span>What a Deployment actually looks like</h3>
+                <div class="two-col">
+                    <div class="term">
+                        <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                                class="d d3"></span><span class="fname">deployment.yaml</span></div>
+                        <pre><span class="c1">apiVersion</span>: apps/v1
+<span class="c1">kind</span>: Deployment
+<span class="c1">metadata</span>:
+  <span class="c1">name</span>: my-app
+<span class="c1">spec</span>:
+  <span class="c1">replicas</span>: <span class="c3">3</span>
+  <span class="c1">template</span>:
+    <span class="c1">spec</span>:
+      <span class="c1">containers</span>:
+        - <span class="c1">name</span>: my-app
+          <span class="c1">image</span>: my-app:v2</pre>
+                    </div>
+                    <div class="term">
+                        <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                                class="d d3"></span><span class="fname">terminal</span></div>
+                        <pre><span class="c4">$</span> kubectl get pods
+<span class="c2">NAME</span>                 <span class="c2">READY</span>  <span class="c2">STATUS</span>
+my-app-7d9f-abcde    1/1     Running
+my-app-7d9f-fghij    1/1     Running
+my-app-7d9f-klmno    1/1     Running</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ MODULE 5 ============ -->
+        <section class="block" id="m5">
+            <div class="wrap">
+                <span class="modtag caution"><span class="plate">CONTAINER NO. 05</span> · Interview Prep</span>
+                <h2>Common questions &amp; beginner traps</h2>
+
+                <h3 class="sub"><span class="n">5.1</span>State vs. Stateless — where does the data live?</h3>
+                <p class="lede" style="font-size:14.5px">Containers are <b>forgetful by design</b>. When a container is
+                    destroyed, anything written inside its own filesystem disappears with it. Try it below.</p>
+                <div class="state-sim">
+                    <div class="container-box" id="containerBox">
+                        <span class="clabel">CONTAINER</span>
+                        <div class="file-chip" id="fileChip">user-photo.jpg</div>
+                    </div>
+                    <div class="arrow-slot" id="arrowSlot">→</div>
+                    <div class="volume-box" id="volumeBox">
+                        <span class="clabel">VOLUME</span>
+                    </div>
+                    <div class="state-controls">
+                        <div class="toggle-row"><input type="checkbox" id="volToggle"><label for="volToggle">Attach a
+                                Volume</label></div>
+                        <button class="btn primary" id="restartBtn">Restart container</button>
+                        <div class="state-log" id="stateLog">An uploaded file sits in the container. What happens when
+                            it restarts?</div>
+                    </div>
+                </div>
+                <div class="caution-box">
+                    <b>Gotcha</b>
+                    <p>Without a Volume, restarting a container doesn't "reboot" your data — it <b>erases</b> it. A
+                        Volume is like plugging in an external hard drive: it lives outside the container's lifecycle,
+                        so data survives crashes, restarts, even a container rescheduled onto a different machine.</p>
+                </div>
+
+                <h3 class="sub"><span class="n">5.2</span>Configuration Management</h3>
+                <p class="lede" style="font-size:14.5px">You shouldn't rebuild an image just to switch from a test
+                    database to a live one. Settings should live outside the image.</p>
+                <div class="cfg-tabs">
+                    <button class="active" data-env="staging">staging</button>
+                    <button data-env="production">production</button>
+                </div>
+                <div class="term" style="border-radius:0 8px 8px 8px">
+                    <div class="term-bar"><span class="d d1"></span><span class="d d2"></span><span
+                            class="d d3"></span><span class="fname" id="cfgFname">.env (staging)</span></div>
+                    <pre id="cfgBody"><span class="c1">DATABASE_URL</span>=<span class="c2">postgres://test-db.local:5432</span>
+<span class="c1">LOG_LEVEL</span>=<span class="c2">debug</span></pre>
+                </div>
+                <p class="lede" style="font-size:14px;margin-top:12px">Same image, same Dockerfile — only the
+                    <b>Environment Variables</b> change between tabs. In Kubernetes, a <b>ConfigMap</b> does the same
+                    job: configuration lives separately from the image, so updating settings never means a rebuild.</p>
+
+                <h3 class="sub"><span class="n">5.3</span>Summary Checklist</h3>
+                <p class="lede" style="font-size:14.5px">If an interviewer asks "what's the difference between Docker
+                    and Kubernetes," say this:</p>
+                <div class="ticket">
+                    <ol id="cheatList">
+                        <li>Docker packages an application and its dependencies into a standardized, portable container,
+                            solving the "it works on my machine" problem.</li>
+                        <li>Docker is great at running one container, but has no built-in way to manage hundreds of them
+                            across many servers.</li>
+                        <li>Kubernetes is an orchestration system that manages, schedules, and coordinates containers
+                            across a cluster of machines.</li>
+                        <li>Kubernetes adds self-healing — replacing crashed containers — and auto-scaling — adding
+                            copies under load — without human intervention.</li>
+                        <li>In short: Docker builds and runs the box; Kubernetes is the conductor coordinating thousands
+                            of boxes at scale.</li>
+                    </ol>
+                    <div class="ticket-foot"><button class="btn" id="copyBtn">Copy to clipboard</button></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <span>Docker &amp; Kubernetes field guide — built for interview prep, from first principles.</span>
+            <span>Every simulator above is safe to click as many times as you want.</span>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // progress bar
+            var bar = document.getElementById('progressBar');
+            function updateBar() {
+                var h = document.documentElement;
+                var scrolled = (h.scrollTop || document.body.scrollTop);
+                var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+                bar.style.width = (height > 0 ? (scrolled / height * 100) : 0) + '%';
+            }
+            document.addEventListener('scroll', updateBar, { passive: true });
+            updateBar();
+
+            // tabbar scrollspy + click
+            var tabBtns = Array.prototype.slice.call(document.querySelectorAll('#tabbar button'));
+            var sections = tabBtns.map(function (b) { return document.getElementById(b.dataset.target); });
+            tabBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var el = document.getElementById(btn.dataset.target);
+                    if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+                });
+            });
+            var spy = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) { tabBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.target === e.target.id); }); }
+                });
+            }, { rootMargin: '-40% 0px -55% 0px' });
+            sections.forEach(function (s) { if (s) spy.observe(s); });
+
+            // reveal on scroll
+            var reveal = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('revealed'); reveal.unobserve(e.target); } });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('section.block').forEach(function (s) { reveal.observe(s); });
+
+            // chaos -> order yard (module 1)
+            var chaosYard = document.getElementById('chaosYard');
+            var chaosCaption = document.getElementById('chaosCaption');
+            var chaosObs = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        setTimeout(function () {
+                            chaosYard.classList.remove('chaos'); chaosYard.classList.add('ordered');
+                            chaosCaption.textContent = 'standardized containers — any crane, any ship, zero improvising';
+                        }, 500);
+                        chaosObs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            if (chaosYard) chaosObs.observe(chaosYard);
+
+            // pipeline auto-cycle (module 2)
+            var pipeline = document.getElementById('pipeline');
+            if (pipeline) {
+                var steps = pipeline.querySelectorAll('.pipe-step');
+                var idx = 0;
+                function cycle() {
+                    steps.forEach(function (s) { s.classList.remove('active'); });
+                    steps[idx].classList.add('active');
+                    idx = (idx + 1) % steps.length;
+                }
+                cycle();
+                if (!reduced) setInterval(cycle, 1900);
+            }
+
+            // lego layer demo (module 2)
+            var legoBtn = document.getElementById('legoBtn');
+            var codeBrick = document.getElementById('codeBrick');
+            var legoReadout = document.getElementById('legoReadout');
+            if (legoBtn) {
+                legoBtn.addEventListener('click', function () {
+                    codeBrick.classList.remove('swapped'); void codeBrick.offsetWidth; codeBrick.classList.add('swapped');
+                    legoReadout.innerHTML = '<span style="color:var(--ok)">✓ Rebuilt in 0.4s</span> — 3 layers reused from cache, only "COPY . ." re-ran.';
+                });
+            }
+
+            // kubernetes self-heal / autoscale simulator (module 3)
+            var simGrid = document.getElementById('simGrid');
+            var simLog = document.getElementById('simLog');
+            var BASE = 9, MAX = 16;
+            var units = [];
+            if (simGrid) {
+                for (var i = 0; i < MAX; i++) {
+                    var u = document.createElement('div');
+                    u.className = 'unit' + (i >= BASE ? ' hidden-slot' : '');
+                    simGrid.appendChild(u);
+                    units.push(u);
+                }
+                function log(msg, cls) {
+                    var line = document.createElement('span');
+                    line.textContent = msg;
+                    if (cls) line.className = cls;
+                    simLog.appendChild(line);
+                    while (simLog.children.length > 4) simLog.removeChild(simLog.firstChild);
+                }
+                document.getElementById('simCrash').addEventListener('click', function () {
+                    var alive = units.slice(0, BASE).filter(function (u) { return !u.classList.contains('dying'); });
+                    if (!alive.length) return;
+                    var pick = alive[Math.floor(Math.random() * alive.length)];
+                    var podName = 'pod-' + Math.random().toString(36).slice(2, 6);
+                    pick.classList.add('dying');
+                    log('⚠ ' + podName + ' crashed — rescheduling...', 'bad');
+                    setTimeout(function () {
+                        pick.classList.remove('dying');
+                        pick.classList.add('spawning');
+                        log('✓ ' + podName + ' replaced (Running)', 'ok');
+                        setTimeout(function () { pick.classList.remove('spawning'); }, 500);
+                    }, 900);
+                });
+                document.getElementById('simSpike').addEventListener('click', function () {
+                    document.getElementById('desiredCount').textContent = MAX;
+                    log('↑ Traffic spike detected — scaling ' + BASE + ' → ' + MAX + ' replicas', 'info');
+                    units.forEach(function (u) { u.classList.remove('hidden-slot'); });
+                    setTimeout(function () {
+                        log('↓ Traffic normalized — scaling ' + MAX + ' → ' + BASE + ' replicas', 'info');
+                        for (var i = BASE; i < MAX; i++) units[i].classList.add('hidden-slot');
+                        document.getElementById('desiredCount').textContent = BASE;
+                    }, 3200);
+                });
+            }
+
+            // deployment counter ambient tick (module 4)
+            var deployCounter = document.getElementById('deployCounter');
+            if (deployCounter && !reduced) {
+                setInterval(function () {
+                    deployCounter.textContent = '2/3';
+                    deployCounter.style.color = 'var(--bad)';
+                    setTimeout(function () { deployCounter.textContent = '3/3'; deployCounter.style.color = 'var(--k8s)'; }, 900);
+                }, 5000);
+            }
+
+            // stateless / volume simulator (module 5)
+            var containerBox = document.getElementById('containerBox');
+            var fileChip = document.getElementById('fileChip');
+            var volumeBox = document.getElementById('volumeBox');
+            var volToggle = document.getElementById('volToggle');
+            var restartBtn = document.getElementById('restartBtn');
+            var stateLog = document.getElementById('stateLog');
+            var chipInVolume = false;
+            if (restartBtn) {
+                restartBtn.addEventListener('click', function () {
+                    var hasVolume = volToggle.checked;
+                    volumeBox.classList.toggle('active', hasVolume);
+                    if (hasVolume && !chipInVolume) {
+                        volumeBox.appendChild(fileChip);
+                        chipInVolume = true;
+                    }
+                    containerBox.classList.add('resetting');
+                    setTimeout(function () {
+                        containerBox.classList.remove('resetting');
+                        if (hasVolume) {
+                            stateLog.innerHTML = '<span class="ok">✓ Container restarted — file persisted via Volume mount.</span>';
+                        } else {
+                            if (chipInVolume) {
+                                containerBox.appendChild(fileChip);
+                                chipInVolume = false;
+                            }
+                            fileChip.classList.add('gone');
+                            stateLog.innerHTML = '<span class="bad">✕ Container restarted — local file is gone. No Volume was attached.</span>';
+                            setTimeout(function () {
+                                fileChip.classList.remove('gone');
+                                containerBox.appendChild(fileChip);
+                            }, 900);
+                        }
+                    }, 500);
+                });
+            }
+
+            // config tabs (module 5)
+            var cfgData = {
+                staging: { fname: '.env (staging)', body: '<span class="c1">DATABASE_URL</span>=<span class="c2">postgres://test-db.local:5432</span>\n<span class="c1">LOG_LEVEL</span>=<span class="c2">debug</span>' },
+                production: { fname: '.env (production)', body: '<span class="c1">DATABASE_URL</span>=<span class="c2">postgres://prod-db.company.com:5432</span>\n<span class="c1">LOG_LEVEL</span>=<span class="c2">error</span>' }
+            };
+            document.querySelectorAll('.cfg-tabs button').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.cfg-tabs button').forEach(function (b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    var d = cfgData[btn.dataset.env];
+                    document.getElementById('cfgFname').textContent = d.fname;
+                    document.getElementById('cfgBody').innerHTML = d.body;
+                });
+            });
+
+            // copy cheat sheet
+            var copyBtn = document.getElementById('copyBtn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function () {
+                    var items = Array.prototype.slice.call(document.querySelectorAll('#cheatList li')).map(function (li, i) { return (i + 1) + '. ' + li.textContent; });
+                    var text = items.join('\n');
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(function () {
+                            var old = copyBtn.textContent;
+                            copyBtn.textContent = 'Copied ✓';
+                            setTimeout(function () { copyBtn.textContent = old; }, 1600);
+                        });
+                    }
+                });
+            }
+        })();
+    </script>
+
+</body>
+
+</html>

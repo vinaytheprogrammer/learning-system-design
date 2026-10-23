@@ -1,0 +1,2184 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset=utf8>
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <style>
+        :root {
+            color-scheme: light
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font: 14px -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #faf9f5;
+            color: #141413
+        }
+
+        img {
+            max-width: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <title>SQL, NoSQL &amp; Vector Databases — A Field Guide</title>
+    <meta name="color-scheme" content="light dark">
+    <style>
+        :root {
+            --bg: #F6F3EC;
+            --panel: #FFFFFF;
+            --panel-2: #FBF8F0;
+            --ink: #201E1A;
+            --ink-muted: #625C50;
+            --border: rgba(32, 28, 20, 0.13);
+            --border-strong: rgba(32, 28, 20, 0.24);
+            --sql: #1C7F6F;
+            --sql-soft: rgba(28, 127, 111, 0.12);
+            --nosql: #B5660C;
+            --nosql-soft: rgba(181, 102, 12, 0.12);
+            --vector: #6A4FC9;
+            --vector-soft: rgba(106, 79, 201, 0.12);
+            --diff-plus: #1C7A4A;
+            --diff-minus: #A8432B;
+            --code-bg: #EDE8DA;
+            --shadow: 0 1px 2px rgba(32, 28, 20, 0.06), 0 8px 24px -12px rgba(32, 28, 20, 0.18);
+            --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+            --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            --radius: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #121311;
+                --panel: #1A1B18;
+                --panel-2: #1F201C;
+                --ink: #ECE8DD;
+                --ink-muted: #A39C8C;
+                --border: rgba(236, 232, 221, 0.12);
+                --border-strong: rgba(236, 232, 221, 0.22);
+                --sql: #49C8AE;
+                --sql-soft: rgba(73, 200, 174, 0.14);
+                --nosql: #E79A3F;
+                --nosql-soft: rgba(231, 154, 63, 0.14);
+                --vector: #A68EEF;
+                --vector-soft: rgba(166, 142, 239, 0.16);
+                --diff-plus: #4FBE82;
+                --diff-minus: #E28569;
+                --code-bg: #242520;
+                --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #121311;
+            --panel: #1A1B18;
+            --panel-2: #1F201C;
+            --ink: #ECE8DD;
+            --ink-muted: #A39C8C;
+            --border: rgba(236, 232, 221, 0.12);
+            --border-strong: rgba(236, 232, 221, 0.22);
+            --sql: #49C8AE;
+            --sql-soft: rgba(73, 200, 174, 0.14);
+            --nosql: #E79A3F;
+            --nosql-soft: rgba(231, 154, 63, 0.14);
+            --vector: #A68EEF;
+            --vector-soft: rgba(166, 142, 239, 0.16);
+            --diff-plus: #4FBE82;
+            --diff-minus: #E28569;
+            --code-bg: #242520;
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        :root[data-theme="light"] {
+            --bg: #F6F3EC;
+            --panel: #FFFFFF;
+            --panel-2: #FBF8F0;
+            --ink: #201E1A;
+            --ink-muted: #625C50;
+            --border: rgba(32, 28, 20, 0.13);
+            --border-strong: rgba(32, 28, 20, 0.24);
+            --sql: #1C7F6F;
+            --sql-soft: rgba(28, 127, 111, 0.12);
+            --nosql: #B5660C;
+            --nosql-soft: rgba(181, 102, 12, 0.12);
+            --vector: #6A4FC9;
+            --vector-soft: rgba(106, 79, 201, 0.12);
+            --diff-plus: #1C7A4A;
+            --diff-minus: #A8432B;
+            --code-bg: #EDE8DA;
+            --shadow: 0 1px 2px rgba(32, 28, 20, 0.06), 0 8px 24px -12px rgba(32, 28, 20, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--font-sans);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--vector);
+            color: #fff;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            text-wrap: balance;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        code,
+        pre,
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        .eyebrow {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin: 0 0 10px;
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .wrap-wide {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* progress bar */
+        #progressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--vector);
+            z-index: 60;
+            width: 0%;
+            transition: width .1s linear;
+        }
+
+        /* ---------- hero ---------- */
+        .hero {
+            padding: 88px 0 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.1rem, 4.6vw, 3.1rem);
+            line-height: 1.08;
+            max-width: 14ch;
+        }
+
+        .hero-sub {
+            max-width: 58ch;
+            font-size: 1.08rem;
+            color: var(--ink-muted);
+            margin: 18px 0 0;
+        }
+
+        .hero-glyphs {
+            display: flex;
+            gap: 14px;
+            margin-top: 34px;
+            flex-wrap: wrap;
+        }
+
+        .glyph {
+            flex: 1 1 180px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 160px;
+        }
+
+        .glyph canvas {
+            width: 100%;
+            height: 64px;
+            display: block;
+        }
+
+        .glyph .glabel {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--ink-muted);
+        }
+
+        .glyph .gtitle {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .glyph.sql .gtitle {
+            color: var(--sql);
+        }
+
+        .glyph.nosql .gtitle {
+            color: var(--nosql);
+        }
+
+        .glyph.vector .gtitle {
+            color: var(--vector);
+        }
+
+        /* ---------- tabbar ---------- */
+        .tabbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: color-mix(in srgb, var(--bg) 88%, transparent);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tabbar-inner {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .tabbar button {
+            appearance: none;
+            border: none;
+            background: none;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--ink-muted);
+            padding: 14px 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            border-bottom: 2px solid transparent;
+            transition: color .15s ease;
+        }
+
+        .tabbar button:hover {
+            color: var(--ink);
+        }
+
+        .tabbar button:focus-visible {
+            outline: 2px solid var(--vector);
+            outline-offset: -2px;
+            border-radius: 4px;
+        }
+
+        .tabbar button.active {
+            color: var(--ink);
+            border-bottom-color: var(--vector);
+        }
+
+        main {
+            padding-bottom: 40px;
+        }
+
+        section.block {
+            padding: 64px 0;
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        section.block.revealed {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            section.block {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        section.block h2 {
+            font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+        }
+
+        section.block>.wrap>.kicker,
+        section.block>.wrap-wide>.kicker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .dot.sql {
+            background: var(--sql);
+        }
+
+        .dot.nosql {
+            background: var(--nosql);
+        }
+
+        .dot.vector {
+            background: var(--vector);
+        }
+
+        .lede {
+            color: var(--ink-muted);
+            max-width: 62ch;
+            margin: 14px 0 0;
+            font-size: 1.02rem;
+        }
+
+        /* ---------- overview cards ---------- */
+        .trio {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        @media (max-width:760px) {
+            .trio {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .trio-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            background: var(--panel);
+            border-top: 3px solid var(--c);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trio-card h3 {
+            font-size: 16px;
+        }
+
+        .trio-card p {
+            margin: 0;
+            color: var(--ink-muted);
+            font-size: 14px;
+        }
+
+        .trio-card .tag {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--c);
+        }
+
+        .case-note {
+            margin-top: 28px;
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            background: var(--panel-2);
+            font-size: 14px;
+            color: var(--ink-muted);
+        }
+
+        .case-note b {
+            color: var(--ink);
+        }
+
+        /* ---------- generic content pieces ---------- */
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .scrollx {
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13.5px;
+        }
+
+        th,
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--ink-muted);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        td.num,
+        th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        pre.code {
+            margin: 0;
+            padding: 14px 16px;
+            background: var(--code-bg);
+            border-radius: var(--radius);
+            font-size: 13px;
+            overflow-x: auto;
+            line-height: 1.55;
+        }
+
+        .diff {
+            margin: 0;
+            padding: 14px 0;
+            background: var(--code-bg);
+            border-radius: var(--radius);
+            font-size: 13.5px;
+            overflow: hidden;
+        }
+
+        .diff .row {
+            padding: 3px 16px;
+            white-space: pre-wrap;
+        }
+
+        .diff .plus {
+            color: var(--diff-plus);
+        }
+
+        .diff .minus {
+            color: var(--diff-minus);
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        @media (max-width:700px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pillrow {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .pill {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-strong);
+            color: var(--ink-muted);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .example-chip {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            background: var(--panel-2);
+            font-size: 13px;
+        }
+
+        .example-chip b {
+            display: block;
+            font-size: 13.5px;
+            margin-bottom: 2px;
+        }
+
+        .example-chip span {
+            color: var(--ink-muted);
+            font-size: 12px;
+        }
+
+        .bp-list {
+            margin: 18px 0 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .bp-list li {
+            display: flex;
+            gap: 10px;
+            font-size: 14.5px;
+            align-items: flex-start;
+        }
+
+        .bp-list li::before {
+            content: "→";
+            font-family: var(--font-mono);
+            color: var(--c);
+            flex: none;
+            margin-top: 1px;
+        }
+
+        .choose-box {
+            border-left: 3px solid var(--c);
+            background: var(--c-soft);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 16px 18px;
+            margin-top: 18px;
+            font-size: 14.5px;
+        }
+
+        .choose-box b {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            display: block;
+            margin-bottom: 6px;
+            color: var(--c);
+        }
+
+        /* ---------- SQL join diagram ---------- */
+        .join-wrap {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 28px;
+            position: relative;
+        }
+
+        .jtable {
+            min-width: 230px;
+        }
+
+        .jtable .ttitle {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--ink-muted);
+            margin-bottom: 6px;
+        }
+
+        .jtable table {
+            font-size: 12.5px;
+        }
+
+        .jtable td,
+        .jtable th {
+            padding: 6px 10px;
+        }
+
+        svg.joinlines {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        svg.joinlines path {
+            fill: none;
+            stroke: var(--sql);
+            stroke-width: 1.6;
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            transition: stroke-dashoffset 1.1s ease;
+        }
+
+        .join-wrap.revealed svg.joinlines path {
+            stroke-dashoffset: 0;
+        }
+
+        .jrow-hl {
+            background: var(--sql-soft) !important;
+        }
+
+        /* ---------- CAP triangle ---------- */
+        .cap-wrap {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        .cap-svg {
+            width: 260px;
+            height: 240px;
+            flex: none;
+        }
+
+        .cap-svg .vert {
+            cursor: pointer;
+        }
+
+        .cap-svg circle {
+            transition: r .15s ease, fill .15s ease;
+        }
+
+        .cap-svg .vert:hover circle,
+        .cap-svg .vert.active circle {
+            r: 9;
+        }
+
+        .cap-svg text {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            fill: var(--ink);
+        }
+
+        .cap-svg .edge {
+            stroke: var(--border-strong);
+            stroke-width: 1.5;
+            transition: stroke .2s ease, opacity .2s;
+        }
+
+        .cap-svg .edge.dim {
+            opacity: .25;
+        }
+
+        .cap-readout {
+            flex: 1 1 260px;
+            min-width: 220px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            background: var(--panel);
+            min-height: 120px;
+        }
+
+        .cap-readout b {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--vector);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .cap-readout p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--ink-muted);
+        }
+
+        /* ---------- vector canvas ---------- */
+        .vec-panel {
+            margin-top: 28px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            overflow: hidden;
+        }
+
+        .vec-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .vec-toolbar .readout {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--ink-muted);
+            margin-left: auto;
+        }
+
+        button.btn {
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            border: 1px solid var(--border-strong);
+            background: var(--panel-2);
+            color: var(--ink);
+            padding: 7px 13px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background .15s, border-color .15s;
+        }
+
+        button.btn:hover {
+            background: var(--vector-soft);
+            border-color: var(--vector);
+        }
+
+        button.btn:focus-visible {
+            outline: 2px solid var(--vector);
+            outline-offset: 1px;
+        }
+
+        button.btn.primary {
+            background: var(--vector);
+            border-color: var(--vector);
+            color: #fff;
+        }
+
+        canvas#vecCanvas {
+            width: 100%;
+            height: 320px;
+            display: block;
+            cursor: crosshair;
+        }
+
+        .vec-caption {
+            padding: 10px 16px 14px;
+            font-size: 12.5px;
+            color: var(--ink-muted);
+            border-top: 1px solid var(--border);
+        }
+
+        /* ---------- compare table ---------- */
+        .compare-table th.sqlcol {
+            color: var(--sql);
+        }
+
+        .compare-table th.nosqlcol {
+            color: var(--nosql);
+        }
+
+        .compare-table th.veccol {
+            color: var(--vector);
+        }
+
+        /* ---------- decision helper ---------- */
+        .decide {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        @media (max-width:760px) {
+            .decide {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .decide-q {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .decide-q button {
+            text-align: left;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            cursor: pointer;
+            color: var(--ink);
+            transition: border-color .15s, background .15s;
+        }
+
+        .decide-q button:hover {
+            border-color: var(--border-strong);
+        }
+
+        .decide-q button.picked {
+            border-color: var(--vector);
+            background: var(--vector-soft);
+        }
+
+        .decide-result {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            background: var(--panel-2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .decide-result .rec {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            transition: color .2s;
+        }
+
+        .decide-result .recbig {
+            font-size: 22px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            transition: color .2s;
+        }
+
+        .decide-result p {
+            margin: 0;
+            font-size: 13.5px;
+            color: var(--ink-muted);
+        }
+
+        /* ---------- interview accordion ---------- */
+        .qa-list {
+            margin-top: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .qa-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            overflow: hidden;
+        }
+
+        .qa-head {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            font-family: var(--font-sans);
+            color: var(--ink);
+        }
+
+        .qa-head:focus-visible {
+            outline: 2px solid var(--vector);
+            outline-offset: -2px;
+        }
+
+        .qa-num {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--ink-muted);
+            flex: none;
+            width: 22px;
+        }
+
+        .qa-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .qa-cat {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 3px 8px;
+            border-radius: 999px;
+            flex: none;
+        }
+
+        .qa-cat.sql {
+            background: var(--sql-soft);
+            color: var(--sql);
+        }
+
+        .qa-cat.nosql {
+            background: var(--nosql-soft);
+            color: var(--nosql);
+        }
+
+        .qa-cat.vector {
+            background: var(--vector-soft);
+            color: var(--vector);
+        }
+
+        .qa-cat.mix {
+            background: var(--border);
+            color: var(--ink-muted);
+        }
+
+        .qa-chevron {
+            flex: none;
+            transition: transform .25s ease;
+            color: var(--ink-muted);
+        }
+
+        .qa-item.open .qa-chevron {
+            transform: rotate(180deg);
+        }
+
+        .qa-body-wrap {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows .3s ease;
+        }
+
+        .qa-item.open .qa-body-wrap {
+            grid-template-rows: 1fr;
+        }
+
+        .qa-body {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .qa-body-inner {
+            padding: 0 18px 20px 54px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            font-size: 14.5px;
+        }
+
+        .qa-body-inner p {
+            margin: 0;
+            color: var(--ink);
+        }
+
+        .qa-body-inner .label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--ink-muted);
+            margin-bottom: 6px;
+        }
+
+        footer {
+            padding: 40px 0 60px;
+        }
+
+        footer .wrap {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+        footer a {
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+
+    <div id="progressBar"></div>
+
+    <header class="hero">
+        <div class="wrap">
+            <p class="eyebrow">Database Field Guide</p>
+            <h1>SQL, NoSQL &amp; Vector Databases</h1>
+            <p class="hero-sub">Three different answers to the same question — <em>where does the data live, and how do
+                    you get it back?</em> This guide walks through how each one models data, when to reach for it, the
+                mistakes that show up in production, and the questions interviewers actually ask about them.</p>
+            <div class="hero-glyphs">
+                <div class="glyph sql">
+                    <canvas id="glyphSql" width="300" height="130"></canvas>
+                    <div>
+                        <div class="gtitle">Rows &amp; relations</div>
+                        <div class="glabel">SQL — fixed schema, joins</div>
+                    </div>
+                </div>
+                <div class="glyph nosql">
+                    <canvas id="glyphNosql" width="300" height="130"></canvas>
+                    <div>
+                        <div class="gtitle">Documents &amp; shards</div>
+                        <div class="glabel">NoSQL — flexible shape, scale</div>
+                    </div>
+                </div>
+                <div class="glyph vector">
+                    <canvas id="glyphVector" width="300" height="130"></canvas>
+                    <div>
+                        <div class="gtitle">Meaning as geometry</div>
+                        <div class="glabel">Vector — similarity search</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="tabbar" id="tabbar">
+        <div class="tabbar-inner">
+            <button data-target="overview">Overview</button>
+            <button data-target="sql">SQL</button>
+            <button data-target="nosql">NoSQL</button>
+            <button data-target="vector">Vector DBs</button>
+            <button data-target="compare">Compare</button>
+            <button data-target="interview">Interview Prep</button>
+        </div>
+    </nav>
+
+    <main>
+
+        <!-- OVERVIEW -->
+        <section class="block" id="overview">
+            <div class="wrap">
+                <p class="eyebrow">01 — The shape of the problem</p>
+                <h2>Same data, three different bets</h2>
+                <p class="lede">Every one of these stores the same underlying thing: facts about the world, retrievable
+                    later. They differ in what they assume about that data's <em>shape</em>, how far they'll scale a
+                    single write pattern, and what kind of question they're fast at answering.</p>
+
+                <div class="trio">
+                    <div class="trio-card" style="--c:var(--sql)">
+                        <span class="tag">Relational</span>
+                        <h3>SQL</h3>
+                        <p>Data fits neat tables with known columns. Relationships between tables are explicit and
+                            enforced. Optimized for correctness and for asking questions nobody anticipated when the
+                            schema was designed.</p>
+                    </div>
+                    <div class="trio-card" style="--c:var(--nosql)">
+                        <span class="tag">Non-relational</span>
+                        <h3>NoSQL</h3>
+                        <p>Data is shaped like the application that reads it — a document, a key, a wide row, a graph.
+                            Optimized for horizontal scale, write throughput, and schemas that change weekly.</p>
+                    </div>
+                    <div class="trio-card" style="--c:var(--vector)">
+                        <span class="tag">Embedding-native</span>
+                        <h3>Vector</h3>
+                        <p>Data is a point in high-dimensional space produced by a model. Optimized for "find me things
+                            that mean something similar," not "find me things that match exactly."</p>
+                    </div>
+                </div>
+
+                <div class="case-note">
+                    <b>Running example used throughout:</b> <b>Atlas Co.</b>, a B2B SaaS billing platform. It has
+                    customers, orders, support tickets, and a growing pile of historical chat transcripts. We'll model
+                    the same business in all three systems so the trade-offs are visible side by side, not abstract.
+                </div>
+            </div>
+        </section>
+
+        <!-- SQL -->
+        <section class="block" id="sql">
+            <div class="wrap">
+                <div class="kicker"><span class="dot sql"></span>
+                    <p class="eyebrow" style="margin:0">02 — Relational</p>
+                </div>
+                <h2>SQL databases</h2>
+                <p class="lede">Data lives in tables with a fixed set of typed columns. Relationships between tables (a
+                    customer <em>has many</em> orders) are declared with foreign keys and enforced by the database
+                    itself, not by application code remembering to check.</p>
+
+                <h3 style="margin-top:36px;font-size:15px;color:var(--ink-muted);font-weight:600;">Atlas Co.'s billing
+                    data, modeled relationally</h3>
+                <div class="join-wrap" id="joinWrap">
+                    <svg class="joinlines" id="joinSvg"></svg>
+                    <div class="jtable panel" style="padding:14px">
+                        <div class="ttitle">customers</div>
+                        <table id="custTable">
+                            <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>name</th>
+                                    <th>plan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-id="1">
+                                    <td>1</td>
+                                    <td>Atlas Co.</td>
+                                    <td>Pro</td>
+                                </tr>
+                                <tr data-id="2">
+                                    <td>2</td>
+                                    <td>Nimbus Labs</td>
+                                    <td>Free</td>
+                                </tr>
+                                <tr data-id="3">
+                                    <td>3</td>
+                                    <td>Delta Freight</td>
+                                    <td>Pro</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="jtable panel" style="padding:14px">
+                        <div class="ttitle">orders</div>
+                        <table id="orderTable">
+                            <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>customer_id</th>
+                                    <th>item</th>
+                                    <th class="num">amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-cust="1">
+                                    <td>101</td>
+                                    <td>1</td>
+                                    <td>API credits</td>
+                                    <td class="num">$240</td>
+                                </tr>
+                                <tr data-cust="3">
+                                    <td>102</td>
+                                    <td>3</td>
+                                    <td>Storage add-on</td>
+                                    <td class="num">$80</td>
+                                </tr>
+                                <tr data-cust="1">
+                                    <td>103</td>
+                                    <td>1</td>
+                                    <td>Support plan</td>
+                                    <td class="num">$120</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <pre class="code" style="margin-top:18px">SELECT c.name, o.item, o.amount
+FROM customers c
+JOIN orders o ON o.customer_id = c.id
+WHERE c.plan = 'Pro';</pre>
+                <p class="lede" style="font-size:13.5px;margin-top:10px">Notice <b>Nimbus Labs</b> has no matching row
+                    in <code>orders</code> — an <code>INNER JOIN</code> silently drops it. Swap in
+                    <code>LEFT JOIN</code> and it comes back with <code>NULL</code> order fields. That silent-drop
+                    behavior is a question interviewers love to probe.</p>
+
+                <h3 style="margin-top:40px">ACID, in one line each</h3>
+                <div class="two-col">
+                    <ul class="bp-list" style="--c:var(--sql)">
+                        <li><b>Atomicity</b> — a transfer debiting one account and crediting another either fully
+                            happens or fully doesn't; there's no state where money vanished mid-transaction.</li>
+                        <li><b>Consistency</b> — every transaction moves the database from one valid state to another; a
+                            constraint like "balance ≥ 0" can never be violated, even transiently.</li>
+                    </ul>
+                    <ul class="bp-list" style="--c:var(--sql)">
+                        <li><b>Isolation</b> — two concurrent transactions don't see each other's half-finished work, as
+                            if they ran one after another.</li>
+                        <li><b>Durability</b> — once committed, a power loss the next instant can't undo it; it's on
+                            disk (or replicated) for good.</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-top:40px">Examples</h3>
+                <div class="examples-grid">
+                    <div class="example-chip"><b>PostgreSQL</b><span>Open-source, extensible (and runs pgvector)</span>
+                    </div>
+                    <div class="example-chip"><b>MySQL</b><span>Ubiquitous, read-heavy web apps</span></div>
+                    <div class="example-chip"><b>SQL Server</b><span>Microsoft stack, enterprise tooling</span></div>
+                    <div class="example-chip"><b>Oracle DB</b><span>Legacy enterprise, heavy compliance</span></div>
+                    <div class="example-chip"><b>SQLite</b><span>Embedded, single-file, mobile/edge</span></div>
+                    <div class="example-chip"><b>CockroachDB</b><span>Distributed SQL, geo-replicated ACID</span></div>
+                </div>
+
+                <h3 style="margin-top:40px">Pros &amp; cons</h3>
+                <pre class="diff">
+<span class="row plus">+ Strong consistency and real multi-row, multi-table transactions</span>
+<span class="row plus">+ Joins and aggregations answer questions you didn't design the schema for</span>
+<span class="row plus">+ Constraints (foreign keys, unique, check) catch bad data at write time</span>
+<span class="row plus">+ Mature tooling: migrations, query planners, decades of operational knowledge</span>
+<span class="row minus">- Horizontal scaling is hard-won (sharding, read replicas, added complexity)</span>
+<span class="row minus">- Schema changes on huge tables need real migration planning</span>
+<span class="row minus">- Rigid shape is a poor fit for data that's naturally nested or ragged</span>
+<span class="row minus">- Vertical scaling has a ceiling, and it costs more per unit near that ceiling</span>
+    </pre>
+
+                <div class="choose-box" style="--c:var(--sql);--c-soft:var(--sql-soft)">
+                    <b>Choose SQL when</b>
+                    Correctness and relationships matter more than raw write scale — billing ledgers, inventory,
+                    anything with money or regulatory audit trails, and any system where you'll need ad-hoc reporting
+                    across entities you haven't thought of yet.
+                </div>
+
+                <h3 style="margin-top:40px">Best practices</h3>
+                <ul class="bp-list" style="--c:var(--sql)">
+                    <li>Normalize to 3NF by default; denormalize deliberately, for a measured read-performance reason —
+                        not as the starting point.</li>
+                    <li>Index every foreign key and every column that shows up in a
+                        <code>WHERE</code>/<code>JOIN</code>/<code>ORDER BY</code> on a large table — but know each
+                        index has a write-time cost, so don't index speculatively.</li>
+                    <li>Run <code>EXPLAIN ANALYZE</code> on slow queries before guessing at fixes; the planner's actual
+                        row estimates usually reveal the real problem.</li>
+                    <li>Avoid <code>SELECT *</code> in application code — it breaks the moment someone adds a column,
+                        and it ships bytes you don't need.</li>
+                    <li>Pick the loosest isolation level that's still safe for the operation; <code>SERIALIZABLE</code>
+                        everywhere just trades correctness-worry for throughput.</li>
+                    <li>Use connection pooling (PgBouncer, RDS Proxy) — connections are expensive, and an app that opens
+                        one per request will starve the database long before CPU does.</li>
+                    <li>Watch for N+1 query patterns from ORMs; one query with a join almost always beats a loop of
+                        single-row lookups.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- NOSQL -->
+        <section class="block" id="nosql">
+            <div class="wrap">
+                <div class="kicker"><span class="dot nosql"></span>
+                    <p class="eyebrow" style="margin:0">03 — Non-relational</p>
+                </div>
+                <h2>NoSQL databases</h2>
+                <p class="lede">"NoSQL" is an umbrella over four genuinely different data models. They share one
+                    instinct: shape storage around how the application will <em>read</em> the data, and relax the
+                    guarantees SQL gives you in exchange for scale and flexibility.</p>
+
+                <div class="two-col" style="margin-top:28px">
+                    <div class="panel" style="padding:18px">
+                        <div class="eyebrow" style="color:var(--nosql)">Document — MongoDB, Couchbase</div>
+                        <p style="font-size:13.5px;color:var(--ink-muted);margin:4px 0 10px">Atlas Co.'s customer
+                            record, with its orders embedded right inside it — one read, no join.</p>
+                        <pre class="code" style="font-size:12px">{
+  "_id": "cust_001",
+  "name": "Atlas Co.",
+  "plan": "Pro",
+  "orders": [
+    { "item": "API credits", "amount": 240 },
+    { "item": "Support plan", "amount": 120 }
+  ]
+}</pre>
+                    </div>
+                    <div class="panel" style="padding:18px">
+                        <div class="eyebrow" style="color:var(--nosql)">Key-Value — Redis, DynamoDB</div>
+                        <p style="font-size:13.5px;color:var(--ink-muted);margin:4px 0 10px">A session cache for Atlas
+                            Co.'s dashboard — single key, single lookup, sub-millisecond.</p>
+                        <pre class="code" style="font-size:12px">GET session:cust_001
+&gt; {"userId":"cust_001","role":"admin","ttl":3600}</pre>
+                    </div>
+                    <div class="panel" style="padding:18px">
+                        <div class="eyebrow" style="color:var(--nosql)">Wide-column — Cassandra, Bigtable</div>
+                        <p style="font-size:13.5px;color:var(--ink-muted);margin:4px 0 10px">Order history partitioned
+                            by customer, clustered by time — built for relentless writes across many nodes.</p>
+                        <pre class="code" style="font-size:12px">PARTITION KEY  customer_id = 'cust_001'
+CLUSTERING     order_ts DESC
+  2026-10-01   order_103  $120
+  2026-09-14   order_101  $240</pre>
+                    </div>
+                    <div class="panel" style="padding:18px">
+                        <div class="eyebrow" style="color:var(--nosql)">Graph — Neo4j, Neptune</div>
+                        <p style="font-size:13.5px;color:var(--ink-muted);margin:4px 0 10px">"Which customers bought
+                            what Delta Freight also bought?" — a relationship-heavy traversal, awkward as a SQL join
+                            chain.</p>
+                        <pre class="code" style="font-size:12px">(Atlas Co.)-[:PLACED]->(Order)-[:CONTAINS]->(Storage)
+(Delta Freight)-[:PLACED]->(Order)-[:CONTAINS]->(Storage)</pre>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:44px">CAP theorem</h3>
+                <p class="lede" style="font-size:14.5px">When a network partition happens — and eventually it does — you
+                    can't have perfect <b>consistency</b> and perfect <b>availability</b> at the same time. Click a
+                    corner.</p>
+                <div class="cap-wrap">
+                    <svg class="cap-svg" viewBox="0 0 260 240" id="capSvg">
+                        <line class="edge" id="edgeCA" x1="130" y1="20" x2="40" y2="200"></line>
+                        <line class="edge" id="edgeCP" x1="130" y1="20" x2="220" y2="200"></line>
+                        <line class="edge" id="edgeAP" x1="40" y1="200" x2="220" y2="200"></line>
+                        <g class="vert" id="vertC" data-k="C">
+                            <circle cx="130" cy="20" r="6" fill="var(--vector)"></circle><text x="130" y="10"
+                                text-anchor="middle">Consistency</text>
+                        </g>
+                        <g class="vert" id="vertA" data-k="A">
+                            <circle cx="40" cy="200" r="6" fill="var(--sql)"></circle><text x="4"
+                                y="222">Availability</text>
+                        </g>
+                        <g class="vert" id="vertP" data-k="P">
+                            <circle cx="220" cy="200" r="6" fill="var(--nosql)"></circle><text x="170" y="222">Partition
+                                Tol.</text>
+                        </g>
+                    </svg>
+                    <div class="cap-readout" id="capReadout">
+                        <b>Pick a corner</b>
+                        <p>Click <b>Consistency</b>, <b>Availability</b>, or <b>Partition Tolerance</b> to see what
+                            you're trading away, and which real systems make that trade.</p>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:40px">BASE, not ACID</h3>
+                <p class="lede" style="font-size:14.5px">Most distributed NoSQL stores trade ACID for <b>BASE</b>:
+                    <b>B</b>asically <b>A</b>vailable (the system responds, even if degraded), <b>S</b>oft state (data
+                    may change without new writes, as replicas converge), <b>E</b>ventual consistency (reads will
+                    reflect the latest write — eventually, not necessarily instantly).</p>
+
+                <h3 style="margin-top:40px">Examples by model</h3>
+                <div class="examples-grid">
+                    <div class="example-chip"><b>MongoDB</b><span>Document, flexible catalogs</span></div>
+                    <div class="example-chip"><b>Redis</b><span>Key-value, caching, sessions</span></div>
+                    <div class="example-chip"><b>DynamoDB</b><span>Key-value/document, serverless scale</span></div>
+                    <div class="example-chip"><b>Cassandra</b><span>Wide-column, write-heavy at scale</span></div>
+                    <div class="example-chip"><b>Neo4j</b><span>Graph, relationship traversal</span></div>
+                    <div class="example-chip"><b>Elasticsearch</b><span>Document + inverted index, search</span></div>
+                </div>
+
+                <h3 style="margin-top:40px">Pros &amp; cons</h3>
+                <pre class="diff">
+<span class="row plus">+ Horizontal scale is the default posture, not a bolt-on</span>
+<span class="row plus">+ Schema flexes with the application — ship a new field without a migration</span>
+<span class="row plus">+ Very high write throughput (Cassandra, DynamoDB) for logs, events, IoT</span>
+<span class="row plus">+ Natural fit for nested, hierarchical, or graph-shaped data</span>
+<span class="row minus">- Eventual consistency bites you if the app assumes read-your-own-write</span>
+<span class="row minus">- Joins across collections are usually manual, in application code</span>
+<span class="row minus">- Transaction guarantees are improving but still narrower than SQL's</span>
+<span class="row minus">- A bad partition/shard key creates a "hot partition" no amount of scaling fixes</span>
+    </pre>
+
+                <div class="choose-box" style="--c:var(--nosql);--c-soft:var(--nosql-soft)">
+                    <b>Choose NoSQL when</b>
+                    Scale or write velocity dominates (event streams, IoT telemetry, session state), the schema will
+                    keep changing, the data is naturally nested or graph-shaped, or you need multi-region availability
+                    more than you need a transaction spanning five tables.
+                </div>
+
+                <h3 style="margin-top:40px">Best practices</h3>
+                <ul class="bp-list" style="--c:var(--nosql)">
+                    <li>Model for your access patterns first, entities second — in DynamoDB/Cassandra you often design
+                        the table around "what query will I run" before "what does the data look like."</li>
+                    <li>Choose the partition/shard key for even distribution; a key like <code>status</code> with three
+                        possible values creates three hot partitions no matter how many nodes you add.</li>
+                    <li>Understand the consistency knobs you actually have (e.g. DynamoDB's eventually- vs
+                        strongly-consistent reads, Cassandra's tunable quorum) rather than assuming one default
+                        everywhere.</li>
+                    <li>Denormalize on purpose and own the duplication — write code (or streams) that keeps copies in
+                        sync instead of discovering the drift in production.</li>
+                    <li>Set TTLs on ephemeral data (sessions, caches) so cleanup isn't a manual job.</li>
+                    <li>Monitor for hot keys/partitions explicitly; they're often invisible until a single node falls
+                        over under load.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- VECTOR -->
+        <section class="block" id="vector">
+            <div class="wrap-wide">
+                <div class="kicker"><span class="dot vector"></span>
+                    <p class="eyebrow" style="margin:0">04 — Embedding-native</p>
+                </div>
+                <h2>Vector databases</h2>
+                <p class="lede" style="max-width:68ch">A vector database doesn't store rows or documents as the primary
+                    unit — it stores <b>embeddings</b>: lists of a few hundred to a few thousand numbers produced by a
+                    model, where distance between two points approximates how similar their meaning is. The query isn't
+                    "find an exact match," it's "find the nearest neighbors in that space."</p>
+
+                <p class="lede" style="font-size:14.5px;margin-top:20px"><b>Atlas Co., continued:</b> a support agent
+                    types "customer says invoice total looks wrong." A keyword search for that exact phrase finds
+                    nothing. A vector search finds three past tickets titled "double-charged on renewal," "billing
+                    amount doesn't match quote," and "invoice total incorrect" — none sharing the same words, all the
+                    same meaning.</p>
+
+                <div class="vec-panel">
+                    <div class="vec-toolbar">
+                        <button class="btn primary" id="vecRun">Run similarity search</button>
+                        <button class="btn" id="vecReset">Reset</button>
+                        <span class="readout" id="vecReadout">Click a point, or run search to place a query</span>
+                    </div>
+                    <canvas id="vecCanvas" width="1000" height="320"></canvas>
+                    <div class="vec-caption">Each dot is a support ticket, embedded into 2D for display (real embeddings
+                        run 384–3072 dimensions). Clusters are topics the model learned on its own. Click anywhere to
+                        drop a query point — the nearest neighbors light up and connect, ranked by cosine similarity,
+                        the way an HNSW index would surface candidates without comparing against every single point.
+                    </div>
+                </div>
+
+                <h3 style="margin-top:44px">The vocabulary interviewers expect</h3>
+                <div class="two-col">
+                    <ul class="bp-list" style="--c:var(--vector)">
+                        <li><b>Similarity metric</b> — cosine similarity, dot product, or Euclidean (L2) distance; which
+                            one is "correct" depends on how the embedding model was trained.</li>
+                        <li><b>ANN (approximate nearest neighbor)</b> — scanning every vector for an exact answer
+                            doesn't scale past a few hundred thousand rows, so indexes trade a small amount of recall
+                            for massive speedups.</li>
+                    </ul>
+                    <ul class="bp-list" style="--c:var(--vector)">
+                        <li><b>HNSW</b> — Hierarchical Navigable Small World graphs; layered graphs you "jump" across,
+                            landing near the right neighborhood in a handful of hops instead of a full scan.</li>
+                        <li><b>Quantization</b> — compressing vectors (scalar/product quantization) so an index that
+                            wouldn't fit in RAM at full precision does, at a small recall cost.</li>
+                    </ul>
+                </div>
+
+                <h3 style="margin-top:40px">Examples</h3>
+                <div class="examples-grid">
+                    <div class="example-chip"><b>pgvector</b><span>Postgres extension — no new infra</span></div>
+                    <div class="example-chip"><b>Pinecone</b><span>Managed, serverless, fastest to ship</span></div>
+                    <div class="example-chip"><b>Qdrant</b><span>Rust, self-host or cloud, low latency</span></div>
+                    <div class="example-chip"><b>Milvus / Zilliz</b><span>Distributed, billions of vectors</span></div>
+                    <div class="example-chip"><b>Weaviate</b><span>Built-in hybrid search modules</span></div>
+                    <div class="example-chip"><b>Chroma</b><span>Lightweight, great for prototyping</span></div>
+                </div>
+
+                <h3 style="margin-top:40px">Pros &amp; cons</h3>
+                <pre class="diff">
+<span class="row plus">+ Finds meaning, not just keywords — the core enabler of RAG and semantic search</span>
+<span class="row plus">+ ANN indexes scale similarity search to billions of vectors in milliseconds</span>
+<span class="row plus">+ Hybrid search (vector + keyword/metadata filter) covers both precision and recall</span>
+<span class="row plus">+ Drop-in for recommendations, dedup, anomaly detection — same core primitive</span>
+<span class="row minus">- Results are approximate; recall@k is a real number you have to measure, not assume</span>
+<span class="row minus">- HNSW graphs are RAM-hungry — the index itself can dwarf the raw vector data</span>
+<span class="row minus">- Swapping embedding models means re-embedding and re-indexing everything</span>
+<span class="row minus">- Younger ecosystem — less standardized than SQL, fewer engineers who've debugged it in production</span>
+    </pre>
+
+                <div class="choose-box" style="--c:var(--vector);--c-soft:var(--vector-soft)">
+                    <b>Choose a vector database when</b>
+                    The query is fundamentally "what's similar to this" rather than "what matches exactly this" — RAG
+                    pipelines feeding an LLM, semantic search, recommendations, image/audio similarity, or dedup by
+                    meaning rather than by hash.
+                </div>
+
+                <h3 style="margin-top:40px">Best practices</h3>
+                <ul class="bp-list" style="--c:var(--vector)">
+                    <li>Match the similarity metric to how the embedding model was trained — most modern text embedding
+                        models (OpenAI, Cohere, BGE) are trained for cosine similarity; using L2 against them silently
+                        degrades relevance.</li>
+                    <li>Start with <b>pgvector</b> if you already run Postgres and you're under ~10M vectors — it adds
+                        semantic search without adding an operational system.</li>
+                    <li>Tune HNSW's <code>M</code> and <code>efConstruction</code>/<code>efSearch</code> deliberately:
+                        higher values buy recall and cost memory/latency — there's no universal default that's right for
+                        your data.</li>
+                    <li>Measure <code>recall@k</code> against a labeled set before trusting an index's output — "it
+                        returns something" isn't the same as "it returns the right thing."</li>
+                    <li>Chunk documents with intention (size + overlap) before embedding; a chunk that splits
+                        mid-thought embeds a confused, useless vector.</li>
+                    <li>Use metadata filters for multi-tenancy and access control, and know whether your engine
+                        pre-filters (filter then search, exact but slower) or post-filters (search then filter, fast but
+                        can under-return) — it changes correctness, not just speed.</li>
+                    <li>Plan for re-embedding: pin your embedding model version, and treat a model upgrade as a
+                        migration, not a config change.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- COMPARE -->
+        <section class="block" id="compare">
+            <div class="wrap-wide">
+                <div class="kicker">
+                    <p class="eyebrow" style="margin:0">05 — Side by side</p>
+                </div>
+                <h2>Choosing between them</h2>
+                <p class="lede">None of these retire the others — most real systems in 2026 run at least two side by
+                    side (Atlas Co. keeps Postgres for billing, Redis for sessions, and pgvector for support-ticket
+                    search, all in one stack).</p>
+
+                <div class="panel scrollx" style="margin-top:26px">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Dimension</th>
+                                <th class="sqlcol">SQL</th>
+                                <th class="nosqlcol">NoSQL</th>
+                                <th class="veccol">Vector</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Data model</td>
+                                <td>Tables, rows, typed columns</td>
+                                <td>Document / key-value / wide-column / graph</td>
+                                <td>High-dimensional numeric vectors</td>
+                            </tr>
+                            <tr>
+                                <td>Schema</td>
+                                <td>Fixed, enforced upfront</td>
+                                <td>Flexible, defined by the app</td>
+                                <td>Fixed vector dimension + metadata</td>
+                            </tr>
+                            <tr>
+                                <td>Query style</td>
+                                <td>Exact match, joins, aggregation</td>
+                                <td>Key lookup, document query, traversal</td>
+                                <td>Nearest-neighbor similarity</td>
+                            </tr>
+                            <tr>
+                                <td>Consistency</td>
+                                <td>Strong (ACID)</td>
+                                <td>Usually eventual (BASE), tunable</td>
+                                <td>Varies by engine; usually eventual</td>
+                            </tr>
+                            <tr>
+                                <td>Scaling style</td>
+                                <td>Vertical first, sharding is work</td>
+                                <td>Horizontal by default</td>
+                                <td>Horizontal, index-size bound by RAM</td>
+                            </tr>
+                            <tr>
+                                <td>Best at</td>
+                                <td>Transactions, relationships, reporting</td>
+                                <td>Scale, write velocity, flexible shape</td>
+                                <td>Semantic search, RAG, recommendations</td>
+                            </tr>
+                            <tr>
+                                <td>Example engines</td>
+                                <td>PostgreSQL, MySQL, SQL Server</td>
+                                <td>MongoDB, Cassandra, Redis, Neo4j</td>
+                                <td>Pinecone, Qdrant, Milvus, pgvector</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-top:44px">Quick decision helper</h3>
+                <p class="lede" style="font-size:14.5px">Answer honestly about the workload — not the hype.</p>
+                <div class="decide">
+                    <div class="decide-q" id="decideQ">
+                        <button data-rec="sql">I need multi-row transactions and strict correctness (money, inventory,
+                            audit).</button>
+                        <button data-rec="sql">I'll need ad-hoc reports joining data I haven't modeled yet.</button>
+                        <button data-rec="nosql">My write volume is huge and growing, and the schema keeps
+                            changing.</button>
+                        <button data-rec="nosql">My data is naturally nested, or relationship-traversal-heavy.</button>
+                        <button data-rec="vector">The core question is "what's similar in meaning to this," not "what
+                            matches exactly."</button>
+                        <button data-rec="vector">I'm building RAG, semantic search, or a recommendation
+                            engine.</button>
+                    </div>
+                    <div class="decide-result" id="decideResult">
+                        <span class="rec">Pick a scenario</span>
+                        <span class="recbig" id="decideBig">—</span>
+                        <p id="decideWhy">Click any statement on the left that matches your workload, and this panel
+                            updates with the likely fit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- INTERVIEW -->
+        <section class="block" id="interview">
+            <div class="wrap">
+                <div class="kicker">
+                    <p class="eyebrow" style="margin:0">06 — Interview prep</p>
+                </div>
+                <h2>Top 10 questions, answered in depth</h2>
+                <p class="lede">The ten questions that come up most often across SQL, NoSQL, and vector database
+                    interviews — with a real example and the trade-off every answer should surface.</p>
+
+                <div class="qa-list" id="qaList">
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">01</span><span class="qa-title">What's the real
+                                difference between SQL and NoSQL, and when would you pick one over the
+                                other?</span><span class="qa-cat mix">Fundamentals</span><span
+                                class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>SQL fixes the schema and enforces relationships at write time; NoSQL lets the
+                                        application define shape and defers (or relaxes) consistency to get scale and
+                                        flexibility. The decision isn't "which is better" — it's "which failure mode can
+                                        I tolerate less."</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p>Atlas Co.'s <b>billing ledger</b> goes in Postgres: a debit/credit must never
+                                            partially apply, and finance needs to join across customers, invoices, and
+                                            payments for reports nobody specified in advance. Atlas Co.'s <b>activity
+                                                feed</b> ("Jane viewed the dashboard," millions of events/day) goes in
+                                            Cassandra or DynamoDB: losing strict ordering under a network blip is fine,
+                                            but losing write throughput is not.</p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ SQL: pick it when being wrong is worse than being slow</span>
+<span class="row plus">+ NoSQL: pick it when being unavailable is worse than being briefly stale</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">02</span><span class="qa-title">Explain the ACID
+                                properties with a concrete example.</span><span class="qa-cat sql">SQL</span><span
+                                class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>Walk through a money transfer: debit account A $100, credit account B $100. That
+                                        single business operation is two writes, and ACID is what keeps those two writes
+                                        behaving as one unit.</p>
+                                    <pre class="code">BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 'A';
+UPDATE accounts SET balance = balance + 100 WHERE id = 'B';
+COMMIT;</pre>
+                                    <p><b>Atomicity:</b> if the process crashes after the first UPDATE, the transaction
+                                        rolls back entirely — A never loses $100 without B gaining it.
+                                        <b>Consistency:</b> a <code>CHECK (balance &gt;= 0)</code> constraint can't be
+                                        violated by this transaction, even mid-flight. <b>Isolation:</b> a concurrent
+                                        read of account A won't see the debited-but-uncommitted balance.
+                                        <b>Durability:</b> once <code>COMMIT</code> returns, a server crash one
+                                        millisecond later doesn't lose it.</p>
+                                    <pre class="diff">
+<span class="row plus">+ Guarantees correctness without the app hand-rolling locks</span>
+<span class="row minus">- Strict isolation levels cost throughput under heavy contention</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">03</span><span class="qa-title">Explain the CAP
+                                theorem. Can a distributed system really have all three?</span><span
+                                class="qa-cat nosql">NoSQL</span><span class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>No — not during an actual network partition. CAP says a distributed data store
+                                        can only guarantee two of <b>Consistency</b> (every read sees the latest write),
+                                        <b>Availability</b> (every request gets a response), and <b>Partition
+                                            tolerance</b> (the system keeps working despite dropped/delayed messages
+                                        between nodes) — and since partitions are a fact of networked life, the real
+                                        choice is CP vs AP.</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p>DynamoDB and Cassandra default to <b>AP</b>: during a partition they keep
+                                            accepting writes on both sides and reconcile later (eventual consistency) —
+                                            Atlas Co.'s activity feed can be briefly stale, that's fine. A system like a
+                                            traditional single-leader Postgres cluster with synchronous replication
+                                            leans <b>CP</b>: if it can't confirm the write landed safely, it refuses the
+                                            write rather than risk returning a wrong answer.</p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ AP: Atlas Co.'s feed stays up during a regional blip, briefly stale</span>
+<span class="row minus">- CP: Atlas Co.'s ledger would rather reject a write than risk double-counting money</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">04</span><span class="qa-title">What are the four
+                                main types of NoSQL databases? Give a use case for each.</span><span
+                                class="qa-cat nosql">NoSQL</span><span class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p><b>Key-value</b> (Redis, DynamoDB) — O(1) lookup by key; Atlas Co. uses it for
+                                        session tokens and rate-limit counters. <b>Document</b> (MongoDB) — JSON-like,
+                                        nested; Atlas Co.'s product catalog, where each item has a different set of
+                                        optional attributes. <b>Wide-column</b> (Cassandra, Bigtable) — partitioned,
+                                        clustered rows built for massive writes; Atlas Co.'s time-series usage metrics.
+                                        <b>Graph</b> (Neo4j) — nodes and edges; Atlas Co.'s "customers who bought X also
+                                        bought Y" recommendation traversal.</p>
+                                    <pre class="diff">
+<span class="row plus">+ Each model maps almost 1:1 onto a specific access pattern — pick by query, not by popularity</span>
+<span class="row minus">- Using the wrong model (e.g. graph traversal forced into key-value) fights the engine the whole way</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">05</span><span class="qa-title">What's the
+                                difference between normalization and denormalization? When would you
+                                denormalize?</span><span class="qa-cat sql">SQL</span><span
+                                class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>Normalization splits data so each fact lives in exactly one place (3NF: no
+                                        repeating groups, every non-key column depends on the whole key) — it prevents
+                                        update anomalies, like a customer's name being stored in 40 order rows and
+                                        drifting out of sync. Denormalization intentionally duplicates data to avoid a
+                                        join on a hot read path.</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p>Atlas Co.'s <code>orders</code> table stores only <code>customer_id</code>
+                                            (normalized) — but the dashboard's "recent orders" view is read a million
+                                            times a day and joining to <code>customers</code> every time is wasteful, so
+                                            a materialized <code>order_summary</code> table carries a denormalized copy
+                                            of <code>customer_name</code>, refreshed on write or on a schedule.</p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ Denormalize a specific, measured hot path — not the schema by default</span>
+<span class="row minus">- Every denormalized copy is a place data can silently drift out of sync</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">06</span><span class="qa-title">How does a B-tree
+                                index actually speed up a query, and why can too many indexes hurt?</span><span
+                                class="qa-cat sql">SQL</span><span class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>Without an index, finding rows matching a condition means scanning every row
+                                        (O(n)). A B-tree index keeps values in sorted order across a balanced tree, so a
+                                        lookup walks a handful of nodes — O(log n) — instead of the whole table. It's
+                                        the same reason a phone book beats reading every name front to back.</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p><code>CREATE INDEX idx_orders_customer ON orders(customer_id);</code> turns
+                                            the earlier JOIN from a full scan of <code>orders</code> into a direct
+                                            lookup per customer. But every <code>INSERT</code>/<code>UPDATE</code> on
+                                            <code>orders</code> now also has to update that index — and every index
+                                            beyond it. A table with eight rarely-used indexes pays that write tax eight
+                                            times over for queries that run once a month.</p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ Index the columns your actual slow queries filter, join, or sort on</span>
+<span class="row minus">- Indexing "just in case" quietly taxes every write forever</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">07</span><span class="qa-title">What is a vector
+                                database, and how is it different from a traditional database?</span><span
+                                class="qa-cat vector">Vector</span><span class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>A traditional database answers "which rows exactly match this condition." A
+                                        vector database answers "which stored points are geometrically closest to this
+                                        one" — it stores embeddings (arrays of floats from a model) instead of, or
+                                        alongside, structured fields, and its core index is built for approximate
+                                        nearest-neighbor search, not exact lookup.</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p>A keyword search for "invoice total incorrect" in Postgres full-text search
+                                            finds rows containing those words. A vector search over the same ticket,
+                                            embedded, also surfaces "double-charged on renewal" — same meaning, zero
+                                            shared words — because both tickets land near each other in embedding space.
+                                        </p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ Finds relevant results even when the wording doesn't match at all</span>
+<span class="row minus">- Can't explain "why" a result matched as crisply as a WHERE clause can</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">08</span><span class="qa-title">Why use approximate
+                                nearest neighbor (ANN) search instead of exact search? How does HNSW work at a high
+                                level?</span><span class="qa-cat vector">Vector</span><span
+                                class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>Exact nearest-neighbor search means computing the distance from your query to
+                                        every single stored vector — fine at 10,000 rows, unworkable at 500 million. ANN
+                                        indexes accept a small, measurable chance of missing the true nearest neighbor
+                                        in exchange for sub-linear search time.</p>
+                                    <p><b>HNSW</b> builds several layers of a graph: the top layer has few nodes with
+                                        long-range connections (for big jumps across the space), lower layers are denser
+                                        (for fine-grained refinement). A search starts at the top layer, greedily moves
+                                        to the closest neighbor, drops a layer when it can't improve, and repeats —
+                                        landing near the right neighborhood in roughly log(n) hops instead of n
+                                        comparisons.</p>
+                                    <pre class="diff">
+<span class="row plus">+ Sub-linear query time even at billions of vectors</span>
+<span class="row minus">- Recall is probabilistic — "did it actually find the true nearest neighbor" must be measured, e.g. recall@10, not assumed</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">09</span><span class="qa-title">What is RAG
+                                (Retrieval-Augmented Generation), and what role does the vector database
+                                play?</span><span class="qa-cat vector">Vector</span><span
+                                class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>An LLM's knowledge is frozen at training time and has no idea about Atlas Co.'s
+                                        internal tickets. RAG bridges that gap at query time: embed the user's question,
+                                        use the vector database to retrieve the most semantically relevant chunks of
+                                        private/current data, and stuff those chunks into the LLM's prompt as context
+                                        before it answers.</p>
+                                    <div>
+                                        <div class="label">Example</div>
+                                        <p>A support agent asks an internal assistant "has anyone seen a double-billing
+                                            issue like this before?" The pipeline embeds the question, the vector DB
+                                            returns the top 5 most similar past tickets, and the LLM answers using those
+                                            real tickets instead of guessing from training data.</p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ Lets an LLM answer accurately about private, current, or niche data without retraining</span>
+<span class="row minus">- Answer quality is capped by retrieval quality — garbage chunks in, garbage answer out</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="qa-item">
+                        <button class="qa-head"><span class="qa-num">10</span><span class="qa-title">System design: how
+                                would you design the data layer for a support platform that needs transactional records,
+                                fast lookups, and semantic search over past tickets?</span><span
+                                class="qa-cat mix">Synthesis</span><span class="qa-chevron">▾</span></button>
+                        <div class="qa-body-wrap">
+                            <div class="qa-body">
+                                <div class="qa-body-inner">
+                                    <p>This is the question that checks whether you reach for one database out of habit
+                                        or genuinely pick per workload. A strong answer uses all three, each for what
+                                        it's good at, and explains why no single store would do.</p>
+                                    <div>
+                                        <div class="label">Example answer — Atlas Co. support platform</div>
+                                        <p><b>PostgreSQL</b> — the system of record for tickets, customers, and SLAs; it
+                                            needs real transactions (closing a ticket and logging an audit event
+                                            together) and relational integrity. <b>Redis</b> — caches the logged-in
+                                            agent's session and recent-ticket list for sub-millisecond dashboard loads.
+                                            <b>pgvector (or a dedicated vector DB past a few million tickets)</b> —
+                                            stores embeddings of ticket text so agents can search "has this happened
+                                            before" by meaning, feeding a RAG assistant that drafts suggested replies.
+                                        </p>
+                                    </div>
+                                    <pre class="diff">
+<span class="row plus">+ Each store does the one thing it's actually good at; none is forced outside its strengths</span>
+<span class="row minus">- Three systems means three things to operate, monitor, and keep in sync — justify the complexity against a single-store alternative first</span></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <span>Field guide — SQL, NoSQL &amp; Vector Databases. Written for interview prep and architecture decisions
+                alike.</span>
+            <span>Scroll any section into view, click the CAP triangle, or run the similarity search above.</span>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // progress bar
+            var bar = document.getElementById('progressBar');
+            function updateBar() {
+                var h = document.documentElement;
+                var scrolled = (h.scrollTop || document.body.scrollTop);
+                var height = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+                bar.style.width = (height > 0 ? (scrolled / height * 100) : 0) + '%';
+            }
+            document.addEventListener('scroll', updateBar, { passive: true });
+            updateBar();
+
+            // tabbar scrollspy + click
+            var tabBtns = Array.prototype.slice.call(document.querySelectorAll('#tabbar button'));
+            var sections = tabBtns.map(function (b) { return document.getElementById(b.dataset.target); });
+            tabBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var el = document.getElementById(btn.dataset.target);
+                    if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+                });
+            });
+            var spy = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        tabBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.target === e.target.id); });
+                    }
+                });
+            }, { rootMargin: '-40% 0px -55% 0px' });
+            sections.forEach(function (s) { if (s) spy.observe(s); });
+
+            // reveal on scroll
+            var reveal = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('revealed'); reveal.unobserve(e.target); } });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('section.block').forEach(function (s) { reveal.observe(s); });
+
+            // join diagram lines
+            var joinWrap = document.getElementById('joinWrap');
+            var joinReveal = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('revealed');
+                        drawJoinLines();
+                        joinReveal.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+            if (joinWrap) joinReveal.observe(joinWrap);
+
+            function rowCenter(el, containerRect) {
+                var r = el.getBoundingClientRect();
+                return { x: r.left - containerRect.left + r.width / 2, y: r.top - containerRect.top + r.height / 2 };
+            }
+            function drawJoinLines() {
+                var svg = document.getElementById('joinSvg');
+                var containerRect = joinWrap.getBoundingClientRect();
+                svg.innerHTML = '';
+                var custRows = document.querySelectorAll('#custTable tbody tr');
+                var orderRows = document.querySelectorAll('#orderTable tbody tr');
+                custRows.forEach(function (cr) {
+                    var id = cr.dataset.id;
+                    orderRows.forEach(function (or) {
+                        if (or.dataset.cust === id) {
+                            var p1 = rowCenter(cr, containerRect);
+                            var p2 = rowCenter(or, containerRect);
+                            var midx = (p1.x + p2.x) / 2;
+                            var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            path.setAttribute('d', 'M' + p1.x + ',' + p1.y + ' C ' + midx + ',' + p1.y + ' ' + midx + ',' + p2.y + ' ' + p2.x + ',' + p2.y);
+                            svg.appendChild(path);
+                        }
+                    });
+                });
+            }
+            window.addEventListener('resize', function () { if (joinWrap.classList.contains('revealed')) drawJoinLines(); });
+
+            // CAP triangle
+            var capFacts = {
+                C: { title: 'Dropping Availability → CP', text: 'Under a partition, the system refuses to answer rather than risk a stale or wrong read. Example: a single-leader SQL cluster that rejects writes it can’t confirm were durably replicated — correctness over uptime.' },
+                A: { title: 'Dropping Consistency → AP', text: 'Under a partition, every node keeps answering, even if replicas briefly disagree. Example: DynamoDB and Cassandra default here — Atlas Co.’s activity feed stays live and reconciles shortly after.' },
+                P: { title: 'Dropping Partition Tolerance → CA', text: 'Only possible if you assume the network never partitions — true for a single-node database, not for anything genuinely distributed. Most “CA” systems are really CP systems that haven’t been partitioned yet.' }
+            };
+            var capSvg = document.getElementById('capSvg');
+            var capReadout = document.getElementById('capReadout');
+            if (capSvg) {
+                capSvg.querySelectorAll('.vert').forEach(function (v) {
+                    v.addEventListener('click', function () {
+                        capSvg.querySelectorAll('.vert').forEach(function (x) { x.classList.remove('active'); });
+                        v.classList.add('active');
+                        var k = v.dataset.k;
+                        var edges = capSvg.querySelectorAll('.edge');
+                        edges.forEach(function (ed) { ed.classList.remove('dim'); });
+                        if (k === 'C') { document.getElementById('edgeAP').classList.add('dim'); }
+                        if (k === 'A') { document.getElementById('edgeCP').classList.add('dim'); }
+                        if (k === 'P') { document.getElementById('edgeCA').classList.add('dim'); }
+                        var fact = capFacts[k];
+                        capReadout.innerHTML = '<b>' + fact.title + '</b><p>' + fact.text + '</p>';
+                    });
+                });
+            }
+
+            // vector canvas
+            var canvas = document.getElementById('vecCanvas');
+            if (canvas) {
+                var ctx = canvas.getContext('2d');
+                var W = canvas.width, H = canvas.height;
+                var clusters = [
+                    { cx: 180, cy: 90, color: getVar('--sql'), n: 10, label: 'billing' },
+                    { cx: 760, cy: 70, color: getVar('--nosql'), n: 9, label: 'login issues' },
+                    { cx: 430, cy: 230, color: getVar('--vector'), n: 11, label: 'feature requests' },
+                    { cx: 820, cy: 250, color: getVar('--ink-muted'), n: 8, label: 'onboarding' }
+                ];
+                function getVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888'; }
+                var points = [];
+                var seedCounter = 0;
+                function seededRand() { seedCounter += 1; var x = Math.sin(seedCounter * 999) * 10000; return x - Math.floor(x); }
+                clusters.forEach(function (c) {
+                    for (var i = 0; i < c.n; i++) {
+                        var ang = seededRand() * Math.PI * 2;
+                        var rad = 28 + seededRand() * 46;
+                        points.push({ x: c.cx + Math.cos(ang) * rad, y: c.cy + Math.sin(ang) * rad, color: c.color, r: 4, baseR: 4, label: c.label });
+                    }
+                });
+                var query = null; // {x,y}
+                var neighbors = [];
+                var t = 0;
+                function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+                function draw() {
+                    ctx.clearRect(0, 0, W, H);
+                    // faint grid
+                    ctx.strokeStyle = 'rgba(128,128,128,0.08)';
+                    ctx.lineWidth = 1;
+                    for (var gx = 0; gx < W; gx += 50) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+                    for (var gy = 0; gy < H; gy += 50) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+
+                    // connections to neighbors
+                    if (query && neighbors.length) {
+                        neighbors.forEach(function (n, i) {
+                            ctx.strokeStyle = n.color;
+                            ctx.globalAlpha = 0.55;
+                            ctx.lineWidth = 1.4;
+                            ctx.beginPath();
+                            ctx.moveTo(query.x, query.y);
+                            ctx.lineTo(n.x, n.y);
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        });
+                    }
+
+                    // points
+                    points.forEach(function (p) {
+                        var isNeighbor = neighbors.indexOf(p) !== -1;
+                        ctx.beginPath();
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = (query && !isNeighbor) ? 0.25 : 1;
+                        ctx.arc(p.x, p.y, isNeighbor ? p.r + 2 : p.r, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                    });
+
+                    // query point + pulse
+                    if (query) {
+                        var pulse = reduced ? 0 : (Math.sin(t * 0.12) + 1) / 2;
+                        ctx.beginPath();
+                        ctx.strokeStyle = getVar('--vector');
+                        ctx.globalAlpha = 0.5 - pulse * 0.3;
+                        ctx.lineWidth = 2;
+                        ctx.arc(query.x, query.y, 10 + pulse * 18, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                        ctx.beginPath();
+                        ctx.fillStyle = getVar('--vector');
+                        ctx.arc(query.x, query.y, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    t += 1;
+                    if (!reduced) requestAnimationFrame(draw);
+                }
+                draw();
+
+                function setQuery(x, y, animated) {
+                    query = { x: x, y: y };
+                    var ranked = points.slice().sort(function (a, b) { return dist(a, query) - dist(b, query); });
+                    neighbors = ranked.slice(0, 4);
+                    var readout = document.getElementById('vecReadout');
+                    readout.textContent = 'Top-4 nearest neighbors highlighted — topics: ' + Array.from(new Set(neighbors.map(function (n) { return n.label; }))).join(', ');
+                }
+                canvas.addEventListener('click', function (ev) {
+                    var rect = canvas.getBoundingClientRect();
+                    var x = (ev.clientX - rect.left) * (W / rect.width);
+                    var y = (ev.clientY - rect.top) * (H / rect.height);
+                    setQuery(x, y);
+                    if (reduced) draw();
+                });
+                document.getElementById('vecRun').addEventListener('click', function () {
+                    setQuery(500 + (seededRand() - 0.5) * 40, 150 + (seededRand() - 0.5) * 40);
+                    if (reduced) draw();
+                });
+                document.getElementById('vecReset').addEventListener('click', function () {
+                    query = null; neighbors = [];
+                    document.getElementById('vecReadout').textContent = 'Click a point, or run search to place a query';
+                    if (reduced) draw();
+                });
+            }
+
+            // hero glyph canvases
+            function drawGlyphSql(c) {
+                var ctx = c.getContext('2d'), W = c.width, H = c.height;
+                ctx.clearRect(0, 0, W, H);
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--sql');
+                ctx.lineWidth = 1.5;
+                var cols = 5, rows = 3, pad = 20;
+                var cw = (W - pad * 2) / cols, rh = (H - pad * 2) / rows;
+                for (var i = 0; i <= cols; i++) { ctx.beginPath(); ctx.moveTo(pad + i * cw, pad); ctx.lineTo(pad + i * cw, H - pad); ctx.stroke(); }
+                for (var j = 0; j <= rows; j++) { ctx.beginPath(); ctx.moveTo(pad, pad + j * rh); ctx.lineTo(W - pad, pad + j * rh); ctx.stroke(); }
+            }
+            function drawGlyphNosql(c) {
+                var ctx = c.getContext('2d'), W = c.width, H = c.height;
+                ctx.clearRect(0, 0, W, H);
+                var col = getComputedStyle(document.documentElement).getPropertyValue('--nosql');
+                var shapes = [[40, 30, 46, 30], [100, 20, 40, 46], [155, 34, 46, 26], [215, 24, 42, 40], [270, 32, 24, 26]];
+                shapes.forEach(function (s) {
+                    ctx.fillStyle = col; ctx.globalAlpha = 0.18;
+                    ctx.fillRect(s[0], 65 - s[3] / 2, s[2], s[3]);
+                    ctx.globalAlpha = 1; ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+                    ctx.strokeRect(s[0], 65 - s[3] / 2, s[2], s[3]);
+                });
+            }
+            function drawGlyphVector(c) {
+                var ctx = c.getContext('2d'), W = c.width, H = c.height;
+                ctx.clearRect(0, 0, W, H);
+                var col = getComputedStyle(document.documentElement).getPropertyValue('--vector');
+                var pts = [[40, 40], [55, 60], [48, 90], [250, 30], [260, 50], [270, 40], [150, 65], [160, 80], [140, 85], [145, 100]];
+                ctx.fillStyle = col;
+                pts.forEach(function (p) { ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, Math.PI * 2); ctx.fill(); });
+                ctx.strokeStyle = col; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(150, 80, 30, 0, Math.PI * 2); ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+            var gs = document.getElementById('glyphSql'), gn = document.getElementById('glyphNosql'), gv = document.getElementById('glyphVector');
+            if (gs) drawGlyphSql(gs);
+            if (gn) drawGlyphNosql(gn);
+            if (gv) drawGlyphVector(gv);
+
+            // interview accordion
+            document.querySelectorAll('.qa-item').forEach(function (item) {
+                var head = item.querySelector('.qa-head');
+                head.addEventListener('click', function () {
+                    item.classList.toggle('open');
+                });
+            });
+
+            // decision helper
+            var decideWhyText = {
+                sql: 'SQL fits: you need multi-row transactional correctness and/or flexible ad-hoc reporting across relationships. Reach for PostgreSQL, MySQL, or similar.',
+                nosql: 'NoSQL fits: your workload is scale- or write-velocity-dominated, or the data is naturally nested/graph-shaped. Reach for MongoDB, Cassandra, Redis, or Neo4j depending on the exact shape.',
+                vector: 'A vector database fits: the core operation is similarity, not exact match. Reach for pgvector if you\'re already on Postgres and under ~10M vectors, otherwise Pinecone, Qdrant, or Milvus at scale.'
+            };
+            var decideLabel = { sql: 'SQL database', nosql: 'NoSQL database', vector: 'Vector database' };
+            document.querySelectorAll('#decideQ button').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('#decideQ button').forEach(function (b) { b.classList.remove('picked'); });
+                    btn.classList.add('picked');
+                    var rec = btn.dataset.rec;
+                    var big = document.getElementById('decideBig');
+                    big.style.color = 'var(--' + rec + ')';
+                    big.textContent = decideLabel[rec];
+                    document.getElementById('decideWhy').textContent = decideWhyText[rec];
+                });
+            });
+
+        })();
+    </script>
+
+</body>
+
+</html>
